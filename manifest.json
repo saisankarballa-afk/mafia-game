@@ -1,0 +1,17 @@
+{
+  "name": "Telugu Custom Mafia",
+  "short_name": "Mafia",
+  "description": "Multiplayer custom mafia party game for friends.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0b10",
+  "theme_color": "#0a0b10",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3233/3233497.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
