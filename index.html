@@ -3,15 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mafia Hybrid Edition</title>
   <link rel="manifest" href="manifest.json">
-  <title>Mafia Multiplayer - Midnight Heist</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0d0e15">
+  <meta name="theme-color" content="#0a0b10">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Ramaraja&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Free Serverless P2P Multiplayer Library -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
   <style>
@@ -24,357 +22,452 @@
     }
     .cinzel { font-family: 'Cinzel', serif; }
     .telugu-font { font-family: 'Ramaraja', 'Plus Jakarta Sans', sans-serif; }
+    .perspective-1000 { perspective: 1000px; }
+    .transform-style-3d { transform-style: preserve-3d; }
+    .backface-hidden { backface-visibility: hidden; }
+    .rotate-y-180 { transform: rotateY(180deg); }
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between overflow-x-hidden">
 
-  <!-- TOP HEADER -->
-  <header class="p-4 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur sticky top-0 z-40 flex items-center justify-between">
+  <!-- TOP BAR -->
+  <header class="p-3 border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40 flex items-center justify-between">
     <div class="flex items-center gap-2">
-      <span class="text-2xl animate-bounce">🕶️</span>
+      <span class="text-xl">🕶️</span>
       <div>
-        <h1 class="cinzel text-lg font-black tracking-wider text-rose-500">MAFIA ONLINE</h1>
-        <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase">Multi-Device Edition</p>
+        <h1 class="cinzel text-base font-black tracking-wider text-rose-500">MAFIA PRO</h1>
+        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Hybrid Party Game</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <button onclick="toggleLanguage()" class="px-3 py-1.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-xs font-bold flex items-center gap-1 shadow">
-        <span>🌐</span> <span id="langBtnText">EN</span>
+      <button onclick="toggleLanguage()" class="px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-xs font-bold">
+        🌐 <span id="langBtnText">EN</span>
       </button>
-      <button onclick="openRulesModal()" class="px-3 py-1.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 text-xs font-bold flex items-center gap-1 shadow">
-        <span>📖</span> <span id="rulesBtnText">రూల్స్</span>
-      </button>
+      <button id="soundToggle" onclick="toggleMute()" class="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs">🔊</button>
     </div>
   </header>
 
-  <!-- MAIN APP CONTAINER -->
+  <!-- MAIN CONTAINER -->
   <main id="appRoot" class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col justify-center"></main>
 
-  <!-- RULES POPUP MODAL -->
-  <div id="rulesModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
-      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
-        <h3 id="modalRulesTitle" class="font-bold text-amber-400 text-lg flex items-center gap-2">
-          <span>📜</span> Game Rules
-        </h3>
-        <button onclick="closeRulesModal()" class="text-slate-400 hover:text-white text-xl font-bold w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">✕</button>
-      </div>
-      <div id="modalRulesContent" class="p-5 overflow-y-auto space-y-4 text-sm text-slate-300 leading-relaxed"></div>
-      <div class="p-4 bg-slate-950 border-t border-slate-800">
-        <button id="modalRulesCloseBtn" onclick="closeRulesModal()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-white text-sm">OK</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    /* =====================================================================
-       I18N DICTIONARY
-    ===================================================================== */
     let currentLang = 'te';
+    let gameMode = null; // 'PASS_AND_PLAY' or 'ONLINE'
 
     const STRINGS = {
       te: {
-        rulesBtn: 'రూల్స్',
         langBtn: 'EN',
-        joinOrHostTitle: 'మల్టీప్లేయర్ లాబీ',
-        joinOrHostSub: 'ప్రతి ఒక్కరూ తమ సొంత ఫోన్ నుండి ఆడండి!',
-        enterYourName: 'మీ పేరు రాయండి...',
-        createRoomBtn: 'రూమ్ క్రియేట్ చేయండి (Host) 👑',
-        orJoinRoom: 'లేదా రూమ్ కోడ్ తో జాయిన్ అవ్వండి:',
-        roomCodePlaceholder: '4-అక్షరాల రూమ్ కోడ్...',
-        joinBtn: 'జాయిన్ అవ్వండి ➔',
-        roomCodeLabel: 'రూమ్ కోడ్ (Room Code):',
-        shareCodeInfo: 'ఈ కోడ్ మీ ఫ్రెండ్స్‌కి పంపండి, వాళ్ళు తమ ఫోన్ లో ఎంటర్ చేస్తారు.',
-        playersJoined: 'జాయిన్ అయిన ప్లేయర్స్:',
-        minPlayersWarning: 'ఆట ప్రారంభించడానికి కనీసం 4గురు ఉండాలి.',
-        startGameBtn: 'ఆటను ప్రారంభించండి! 🚀',
-        waitingHost: 'హోస్ట్ ఆటను ప్రారంభించే వరకు వేచి ఉండండి...',
-        yourSecretRole: 'మీ రహస్య పాత్ర (Your Role):',
-        nightTitle: 'రాత్రి వేళ (Night Time)',
-        nightWait: 'రాత్రి యాక్షన్స్ పూర్తయ్యే వరకు వేచి ఉండండి...',
-        villagerSleepTitle: 'మీరు నిద్రపోతున్నారు...',
-        villagerSleepDesc: 'మీరు సాధు జీవి. రాత్రి మీకు ఎటువంటి శక్తులు లేవు. కామ్ గా ఉండండి!',
-        mafiaTargetTitle: 'హత్య చేయాల్సిన వ్యక్తిని ఎంచుకోండి:',
-        detTargetTitle: 'అనుమానితుడి ఐడెంటిటీని తనిఖీ చేయండి:',
-        docTargetTitle: 'ప్రాణ రక్షణ ఇవ్వాల్సిన వ్యక్తిని ఎంచుకోండి:',
-        doneBtn: 'సబ్మిట్ చేయండి (Done) ✔️',
-        dayTitle: 'తెల్లవారింది (Morning)',
-        killedAnnounce: '🚨 ఈ రాత్రి మాఫియా దాడిలో {name} చనిపోయారు!',
-        noKillAnnounce: '🛡️ డాక్టర్ కాపాడటం వల్ల ఈ రాత్రి ఎవరూ చనిపోలేదు!',
-        voteInstruction: 'దొంగ ఎవరో కనిపెట్టి ఓటు వేయండి:',
-        skipVote: '🤷 ఎవరికీ ఓటు వేయను (Skip)',
-        confirmVote: 'ఓటు నమోదు చేయండి ➔',
-        votedWait: 'అందరూ ఓటు వేసే వరకు వేచి ఉండండి...',
-        playAgain: 'మళ్ళీ ఆడండి 🔄'
+        chooseModeTitle: 'Ela Aadali Anukuntunnaru?',
+        chooseModeSub: 'Game mode ni select cheskondi',
+        singlePhoneBtn: '📱 Oke Phone lo Aadandi (Pass & Play)',
+        singlePhoneDesc: 'Okka mobile tho friends andharu kalisi aadochu',
+        multiPhoneBtn: '📶 Prathi Okkari Phone lo (Room Code)',
+        multiPhoneDesc: 'Online Room Code tho andharu connect avtharu',
+        namePrompt: 'Friend peru enter cheyyandi...',
+        addBtn: 'Add Player',
+        startRoleBtn: 'Roles Assign Cheyyandi',
+        passTo: 'Phone {name} ki ivvandi',
+        tapToSeeRole: 'Role chudadaniki hold cheyyandi',
+        nightTitle: 'Raathri Velayenu 🌙',
+        morningTitle: 'Thellavaarindhi ☀️',
+        killedMsg: '🚨 Ee raathri Mafia valla {name} chanipoyaru!',
+        savedMsg: '🛡️ Doctor kaapadadam valla evaru chavoru!',
+        startDiscuss: 'Charchalu Modhalupettandi 🗣️',
+        voteTitle: 'Voting Chamber 🗳️',
+        skipVote: '🤷 Skip Vote',
+        confirmVote: 'Vote Confirm Cheyyandi ➔',
+        restart: 'Malli Kothha Game 🔄'
       },
       en: {
-        rulesBtn: 'Rules',
         langBtn: 'TE',
-        joinOrHostTitle: 'Multiplayer Lobby',
-        joinOrHostSub: 'Everyone plays from their own personal smartphone!',
-        enterYourName: 'Enter your name...',
-        createRoomBtn: 'Host New Game 👑',
-        orJoinRoom: 'Or join with Room Code:',
-        roomCodePlaceholder: '4-letter Room Code...',
-        joinBtn: 'Join Game ➔',
-        roomCodeLabel: 'Room Code:',
-        shareCodeInfo: 'Share this Room Code with friends to join from their phone.',
-        playersJoined: 'Connected Players:',
-        minPlayersWarning: 'At least 4 players required to begin.',
-        startGameBtn: 'Start Game! 🚀',
-        waitingHost: 'Waiting for host to begin...',
-        yourSecretRole: 'Your Secret Role:',
-        nightTitle: 'Night Time',
-        nightWait: 'Night actions in progress...',
-        villagerSleepTitle: 'You are fast asleep...',
-        villagerSleepDesc: 'You are an innocent citizen with no night powers. Keep silent!',
-        mafiaTargetTitle: 'Select target to assassinate:',
-        detTargetTitle: 'Inspect suspect loyalty:',
-        docTargetTitle: 'Select player to grant immunity:',
-        doneBtn: 'Submit Action ✔️',
-        dayTitle: 'Morning Phase',
-        killedAnnounce: '🚨 {name} was murdered in cold blood by the Mafia!',
-        noKillAnnounce: '🛡️ The Doctor prevented any casualties tonight!',
-        voteInstruction: 'Discuss and cast your vote on the suspect:',
-        skipVote: '🤷 Skip Vote (Abstain)',
-        confirmVote: 'Submit Vote ➔',
-        votedWait: 'Waiting for everyone to vote...',
-        playAgain: 'Play Again 🔄'
+        chooseModeTitle: 'Choose How to Play',
+        chooseModeSub: 'Select your preferred gameplay mode',
+        singlePhoneBtn: '📱 Pass & Play (Single Phone)',
+        singlePhoneDesc: 'Everyone plays on one shared smartphone',
+        multiPhoneBtn: '📶 Multi-Device (Room Code)',
+        multiPhoneDesc: 'Everyone joins with Room Code on their phone',
+        namePrompt: 'Enter friend name...',
+        addBtn: 'Add Player',
+        startRoleBtn: 'Assign Roles',
+        passTo: 'Pass phone to {name}',
+        tapToSeeRole: 'Hold to inspect your secret role',
+        nightTitle: 'Night Falls 🌙',
+        morningTitle: 'Sunrise Gazette ☀️',
+        killedMsg: '🚨 {name} was eliminated by the Mafia last night!',
+        savedMsg: '🛡️ The Doctor prevented any casualties!',
+        startDiscuss: 'Start Discussion 🗣️',
+        voteTitle: 'Voting Chamber 🗳️',
+        skipVote: '🤷 Skip Vote',
+        confirmVote: 'Confirm Vote ➔',
+        restart: 'Play Again 🔄'
       }
     };
 
-    function t(key, params = {}) {
-      let str = STRINGS[currentLang][key] || STRINGS['en'][key] || key;
-      Object.entries(params).forEach(([k, v]) => { str = str.replace(`{${k}}`, v); });
-      return str;
+    function t(k, params = {}) {
+      let s = STRINGS[currentLang][k] || STRINGS['en'][k] || k;
+      Object.entries(params).forEach(([p, v]) => { s = s.replace(`{${p}}`, v); });
+      return s;
     }
 
     function toggleLanguage() {
       currentLang = currentLang === 'te' ? 'en' : 'te';
       document.getElementById('langBtnText').innerText = STRINGS[currentLang].langBtn;
-      document.getElementById('rulesBtnText').innerText = STRINGS[currentLang].rulesBtn;
       render();
     }
 
-    /* =====================================================================
-       PEERJS MULTIPLAYER NETWORKING
-    ===================================================================== */
-    let peer = null;
-    let isHost = false;
-    let roomCode = '';
-    let myId = '';
-    let myName = '';
-    let myRole = '';
-    let connections = []; // For Host: list of client connections
-    let hostConn = null; // For Client: connection to Host
-
-    let gameState = {
-      phase: 'LOBBY', // LOBBY, NIGHT, DAY, WINNER
-      players: [], // { id, name, isAlive, role }
-      nightActions: { mafia: null, doc: null, det: null },
-      lastKilled: null,
-      votes: {}, // voterId -> targetId
-      winner: null
-    };
-
-    function generateCode() {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let res = '';
-      for (let i = 0; i < 4; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
-      return res;
+    /* Web Audio Sound Engine */
+    let audioCtx = null, isMuted = false;
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+    function toggleMute() {
+      isMuted = !isMuted;
+      document.getElementById('soundToggle').innerText = isMuted ? '🔇' : '🔊';
+    }
+    function playBeep(freq = 600, dur = 0.08) {
+      if (isMuted) return;
+      try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        osc.start(); osc.stop(ctx.currentTime + dur);
+      } catch (e) {}
     }
 
-    function initHost() {
-      const nameInput = document.getElementById('nameInput');
-      myName = nameInput.value.trim() || 'Host';
-      roomCode = generateCode();
-      const peerId = 'mafia_' + roomCode.toLowerCase();
+    /* Single Phone App State */
+    let offlinePlayers = [
+      { id: 'p1', name: 'Raju', isAlive: true, role: null },
+      { id: 'p2', name: 'Ajay', isAlive: true, role: null },
+      { id: 'p3', name: 'Kiran', isAlive: true, role: null },
+      { id: 'p4', name: 'Suresh', isAlive: true, role: null }
+    ];
+    let offlineStep = 0;
+    let offlinePhase = 'MODE_SELECT'; // MODE_SELECT, SETUP, REVEAL, NIGHT, GAZETTE, VOTE, WINNER
+    let nightChoices = { mafia: null, doc: null, det: null };
+    let lastKilledName = null;
+    let offlineVotes = {};
 
-      peer = new Peer(peerId);
+    /* Multiplayer PeerJS State */
+    let peer = null, isHost = false, roomCode = '', myId = '', myRole = '', hostConn = null, connections = [];
+    let onlineState = { phase: 'LOBBY', players: [], lastKilled: null, winner: null };
 
-      peer.on('open', (id) => {
-        isHost = true;
-        myId = id;
-        gameState.players = [{ id: myId, name: myName, isAlive: true, role: null }];
-        render();
-      });
+    const appRoot = document.getElementById('appRoot');
 
-      peer.on('connection', (conn) => {
-        connections.push(conn);
-        conn.on('data', (data) => {
-          handleHostReceivedData(conn, data);
-        });
-        conn.on('close', () => {
-          gameState.players = gameState.players.filter(p => p.id !== conn.peer);
-          broadcastGameState();
-          render();
-        });
-      });
-
-      peer.on('error', (err) => {
-        alert('Connection error: ' + err.type + '. Try another code.');
-      });
+    function render() {
+      if (offlinePhase === 'MODE_SELECT') renderModeSelect();
+      else if (gameMode === 'PASS_AND_PLAY') renderPassAndPlay();
+      else renderMultiplayer();
     }
 
-    function initClient() {
-      const nameInput = document.getElementById('nameInput');
-      const codeInput = document.getElementById('codeInput');
-      myName = nameInput.value.trim() || 'Player';
-      roomCode = codeInput.value.trim().toUpperCase();
+    /* ================= 1. MODE SELECT ================= */
+    function renderModeSelect() {
+      appRoot.innerHTML = `
+        <div class="space-y-4 text-center">
+          <div>
+            <h2 class="text-2xl font-black cinzel text-white">${t('chooseModeTitle')}</h2>
+            <p class="text-xs text-slate-400 mt-1">${t('chooseModeSub')}</p>
+          </div>
 
-      if (roomCode.length !== 4) {
-        alert('Please enter a 4-letter Room Code');
-        return;
+          <div class="space-y-3 pt-2">
+            <button onclick="selectMode('PASS_AND_PLAY')" class="w-full p-4 rounded-3xl bg-gradient-to-r from-rose-900/40 to-slate-900 border-2 border-rose-500/60 hover:border-rose-500 text-left transition shadow-xl">
+              <p class="font-bold text-sm text-white">${t('singlePhoneBtn')}</p>
+              <p class="text-xs text-slate-400 mt-1">${t('singlePhoneDesc')}</p>
+            </button>
+
+            <button onclick="selectMode('ONLINE')" class="w-full p-4 rounded-3xl bg-gradient-to-r from-indigo-900/40 to-slate-900 border-2 border-indigo-500/60 hover:border-indigo-500 text-left transition shadow-xl">
+              <p class="font-bold text-sm text-white">${t('multiPhoneBtn')}</p>
+              <p class="text-xs text-slate-400 mt-1">${t('multiPhoneDesc')}</p>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function selectMode(m) {
+      gameMode = m;
+      playBeep(450, 0.1);
+      if (m === 'PASS_AND_PLAY') {
+        offlinePhase = 'SETUP';
+      } else {
+        offlinePhase = 'ONLINE_LOBBY';
       }
-
-      peer = new Peer();
-
-      peer.on('open', (id) => {
-        myId = id;
-        const targetPeerId = 'mafia_' + roomCode.toLowerCase();
-        hostConn = peer.connect(targetPeerId);
-
-        hostConn.on('open', () => {
-          hostConn.send({ type: 'JOIN', name: myName });
-        });
-
-        hostConn.on('data', (data) => {
-          handleClientReceivedData(data);
-        });
-      });
-
-      peer.on('error', () => {
-        alert('Room not found. Check code and ensure Host is ready.');
-      });
+      render();
     }
 
-    function broadcastGameState() {
-      connections.forEach(conn => {
-        if (conn.open) {
-          // Send personalized payload so clients only see their own role
-          conn.send({
-            type: 'STATE_UPDATE',
-            state: {
-              phase: gameState.phase,
-              players: gameState.players.map(p => ({ id: p.id, name: p.name, isAlive: p.isAlive })),
-              lastKilled: gameState.lastKilled,
-              winner: gameState.winner
-            },
-            role: (gameState.players.find(p => p.id === conn.peer) || {}).role
-          });
-        }
-      });
+    /* ================= 2. PASS & PLAY (SINGLE PHONE) ================= */
+    function renderPassAndPlay() {
+      if (offlinePhase === 'SETUP') renderOfflineSetup();
+      else if (offlinePhase === 'REVEAL') renderOfflineReveal();
+      else if (offlinePhase === 'NIGHT') renderOfflineNight();
+      else if (offlinePhase === 'GAZETTE') renderOfflineGazette();
+      else if (offlinePhase === 'VOTE') renderOfflineVote();
+      else if (offlinePhase === 'WINNER') renderOfflineWinner();
     }
 
-    function handleHostReceivedData(conn, data) {
-      if (data.type === 'JOIN') {
-        gameState.players.push({ id: conn.peer, name: data.name, isAlive: true, role: null });
-        broadcastGameState();
-        render();
-      } else if (data.type === 'NIGHT_ACTION') {
-        if (data.action === 'mafia') gameState.nightActions.mafia = data.target;
-        if (data.action === 'doc') gameState.nightActions.doc = data.target;
-        if (data.action === 'det') {
-          const target = gameState.players.find(p => p.id === data.target);
-          conn.send({ type: 'DET_RESULT', isMafia: target && target.role === 'mafia' });
-        }
-        checkNightResolution();
-      } else if (data.type === 'VOTE') {
-        gameState.votes[conn.peer] = data.target;
-        checkVoteResolution();
-      }
+    function renderOfflineSetup() {
+      appRoot.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-white text-base">Mee Gang Friends</h3>
+            <button onclick="offlinePhase='MODE_SELECT'; render();" class="text-xs text-slate-400 underline">Mode Change</button>
+          </div>
+
+          <div class="flex gap-2">
+            <input id="singleNameInput" type="text" placeholder="${t('namePrompt')}"
+              class="flex-1 bg-slate-900 border border-slate-700 rounded-2xl px-4 py-2.5 text-xs text-white focus:outline-none">
+            <button onclick="addSinglePlayer()" class="px-4 py-2.5 rounded-2xl bg-rose-600 font-bold text-xs text-white">Add</button>
+          </div>
+
+          <div class="space-y-1.5 max-h-56 overflow-y-auto">
+            ${offlinePlayers.map((p, idx) => `
+              <div class="flex justify-between items-center p-2.5 bg-slate-900/80 border border-slate-800 rounded-xl">
+                <span class="text-xs font-bold text-white">${idx + 1}. ${p.name}</span>
+                <button onclick="removeSinglePlayer('${p.id}')" class="text-rose-400 text-xs">✕</button>
+              </div>
+            `).join('')}
+          </div>
+
+          <button onclick="startSingleGame()" ${offlinePlayers.length < 4 ? 'disabled' : ''} 
+            class="w-full py-3.5 rounded-2xl font-black text-xs uppercase shadow-xl ${
+              offlinePlayers.length < 4 ? 'bg-slate-800 text-slate-500' : 'bg-emerald-600 text-white'
+            }">
+            ${t('startRoleBtn')} (${offlinePlayers.length} Players)
+          </button>
+        </div>
+      `;
     }
 
-    function handleClientReceivedData(data) {
-      if (data.type === 'STATE_UPDATE') {
-        gameState.phase = data.state.phase;
-        gameState.players = data.state.players;
-        gameState.lastKilled = data.state.lastKilled;
-        gameState.winner = data.state.winner;
-        if (data.role) myRole = data.role;
-        render();
-      } else if (data.type === 'DET_RESULT') {
-        alert(data.isMafia ? '⚠️ TARGET IS MAFIA!' : '🕊️ TARGET IS INNOCENT!');
-      }
+    function addSinglePlayer() {
+      const input = document.getElementById('singleNameInput');
+      const val = input.value.trim();
+      if (!val) return;
+      offlinePlayers.push({ id: 'p_' + Date.now(), name: val, isAlive: true, role: null });
+      input.value = '';
+      render();
+    }
+    function removeSinglePlayer(id) {
+      offlinePlayers = offlinePlayers.filter(p => p.id !== id);
+      render();
     }
 
-    /* =====================================================================
-       GAME ENGINE & LOGIC (HOST CONTROLLED)
-    ===================================================================== */
-    function hostStartGame() {
-      const total = gameState.players.length;
-      if (total < 4) return;
-
+    function startSingleGame() {
+      const total = offlinePlayers.length;
       const roles = ['mafia', 'detective', 'doctor'];
+      if (total >= 5) roles.push('jester');
       while (roles.length < total) roles.push('villager');
 
       for (let i = roles.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [roles[i], roles[j]] = [roles[j], roles[i]];
       }
+      offlinePlayers.forEach((p, idx) => { p.role = roles[idx]; p.isAlive = true; });
 
-      gameState.players.forEach((p, idx) => {
-        p.role = roles[idx];
-        p.isAlive = true;
-      });
-
-      myRole = (gameState.players.find(p => p.id === myId) || {}).role;
-      gameState.phase = 'NIGHT';
-      gameState.nightActions = { mafia: null, doc: null, det: null };
-      broadcastGameState();
+      offlineStep = 0;
+      offlinePhase = 'REVEAL';
       render();
     }
 
-    function checkNightResolution() {
-      // In host mode, resolve when mafia chooses or host moves forward
-      if (gameState.nightActions.mafia) {
-        setTimeout(resolveNight, 1500);
+    let isRevealedTemp = false;
+    function renderOfflineReveal() {
+      const player = offlinePlayers[offlineStep];
+      appRoot.innerHTML = `
+        <div class="space-y-4 text-center">
+          <p class="text-xs font-bold text-rose-400 uppercase tracking-widest">Secret Role Assignment</p>
+          <h2 class="text-2xl font-black text-white">${t('passTo', { name: player.name })}</h2>
+
+          <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-3 cursor-pointer" onclick="isRevealedTemp=!isRevealedTemp; render();">
+            <span class="text-4xl block">${isRevealedTemp ? '🎭' : '🔒'}</span>
+            ${isRevealedTemp ? `
+              <p class="text-xl font-black text-amber-400 uppercase">${player.role}</p>
+              <p class="text-xs text-slate-300">Gurtu pettukuni ventane tap chesi hide cheyyandi!</p>
+            ` : `
+              <p class="text-xs font-bold text-slate-400">${t('tapToSeeRole')}</p>
+            `}
+          </div>
+
+          <button onclick="nextReveal()" class="w-full py-3 rounded-2xl bg-slate-800 text-xs font-bold text-white">
+            ${offlineStep < offlinePlayers.length - 1 ? 'Next Player ➔' : 'Raathri Modhalupettandi 🌙'}
+          </button>
+        </div>
+      `;
+    }
+
+    function nextReveal() {
+      isRevealedTemp = false;
+      if (offlineStep < offlinePlayers.length - 1) {
+        offlineStep++;
+        render();
+      } else {
+        offlineStep = 0;
+        nightChoices = { mafia: null, doc: null, det: null };
+        offlinePhase = 'NIGHT';
+        render();
       }
     }
 
-    function resolveNight() {
-      const kill = gameState.nightActions.mafia;
-      const save = gameState.nightActions.doc;
-      let killed = null;
+    let offlineNightActionDone = false;
+    function renderOfflineNight() {
+      const living = offlinePlayers.filter(p => p.isAlive);
+      const player = living[offlineStep];
+
+      if (!player) {
+        finishOfflineNight();
+        return;
+      }
+
+      appRoot.innerHTML = `
+        <div class="space-y-4 text-center">
+          <span class="text-3xl block">🌙</span>
+          <h3 class="text-xl font-black text-white">${t('passTo', { name: player.name })}</h3>
+          <p class="text-[11px] text-slate-400">Pakkana evaroo chudakunda chusukondi</p>
+
+          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-3 text-left">
+            ${player.role === 'mafia' ? `
+              <p class="text-xs font-bold text-rose-400">Target ni choose chey (Kill):</p>
+              <div class="grid grid-cols-2 gap-2">
+                ${living.filter(x => x.id !== player.id).map(x => `
+                  <button onclick="nightChoices.mafia='${x.id}'; playBeep();" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white">${x.name}</button>
+                `).join('')}
+              </div>
+            ` : player.role === 'doctor' ? `
+              <p class="text-xs font-bold text-emerald-400">Evarini protect chesthav?:</p>
+              <div class="grid grid-cols-2 gap-2">
+                ${living.map(x => `
+                  <button onclick="nightChoices.doc='${x.id}'; playBeep();" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white">${x.name}</button>
+                `).join('')}
+              </div>
+            ` : player.role === 'detective' ? `
+              <p class="text-xs font-bold text-cyan-400">Evari role check chesthav?:</p>
+              <div class="grid grid-cols-2 gap-2">
+                ${living.filter(x => x.id !== player.id).map(x => `
+                  <button onclick="inspectSingleDet('${x.id}')" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white">${x.name}</button>
+                `).join('')}
+              </div>
+            ` : `
+              <div class="text-center py-4 space-y-2">
+                <p class="text-xs font-bold text-amber-300">Nuvvu Villager vi (Sleeping)</p>
+                <p class="text-[10px] text-slate-400">Pakkana vallaki doubt raakunda dummy buttons tap chesi pass cheyyandi!</p>
+                <button onclick="playBeep()" class="px-3 py-1 bg-slate-800 rounded-lg text-xs">Tap</button>
+              </div>
+            `}
+          </div>
+
+          <button onclick="nextOfflineNightTurn()" class="w-full py-3 rounded-2xl bg-indigo-600 font-bold text-xs text-white">
+            Action Done ➔
+          </button>
+        </div>
+      `;
+    }
+
+    function inspectSingleDet(tId) {
+      const target = offlinePlayers.find(p => p.id === tId);
+      alert(target.role === 'mafia' ? '⚠️ TARGET IS MAFIA!' : '🕊️ TARGET IS INNOCENT!');
+    }
+
+    function nextOfflineNightTurn() {
+      const living = offlinePlayers.filter(p => p.isAlive);
+      offlineStep++;
+      if (offlineStep < living.length) {
+        render();
+      } else {
+        finishOfflineNight();
+      }
+    }
+
+    function finishOfflineNight() {
+      const kill = nightChoices.mafia;
+      const save = nightChoices.doc;
+      let victim = null;
 
       if (kill && kill !== save) {
-        killed = gameState.players.find(p => p.id === kill);
-        if (killed) killed.isAlive = false;
+        victim = offlinePlayers.find(p => p.id === kill);
+        if (victim) victim.isAlive = false;
       }
-
-      gameState.lastKilled = killed ? killed.name : null;
-      gameState.nightActions = { mafia: null, doc: null, det: null };
-      gameState.votes = {};
+      lastKilledName = victim ? victim.name : null;
 
       // Check win
-      const living = gameState.players.filter(p => p.isAlive);
+      const living = offlinePlayers.filter(p => p.isAlive);
       const mafiaLiving = living.filter(p => p.role === 'mafia');
       if (mafiaLiving.length === 0) {
-        gameState.phase = 'WINNER';
-        gameState.winner = 'Town';
+        triggerOfflineWin('Town');
       } else if (mafiaLiving.length >= (living.length - mafiaLiving.length)) {
-        gameState.phase = 'WINNER';
-        gameState.winner = 'Mafia';
+        triggerOfflineWin('Mafia');
       } else {
-        gameState.phase = 'DAY';
-      }
-
-      broadcastGameState();
-      render();
-    }
-
-    function checkVoteResolution() {
-      const living = gameState.players.filter(p => p.isAlive);
-      if (Object.keys(gameState.votes).length >= living.length) {
-        tallyDayVotes();
+        offlinePhase = 'GAZETTE';
+        render();
       }
     }
 
-    function tallyDayVotes() {
+    function renderOfflineGazette() {
+      appRoot.innerHTML = `
+        <div class="space-y-4 text-center">
+          <span class="text-4xl block">☀️</span>
+          <h2 class="text-xl font-black cinzel text-white">${t('morningTitle')}</h2>
+
+          <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-2">
+            <p class="text-sm font-black ${lastKilledName ? 'text-rose-400' : 'text-emerald-400'}">
+              ${lastKilledName ? t('killedMsg', { name: lastKilledName }) : t('savedMsg')}
+            </p>
+          </div>
+
+          <button onclick="offlineStep=0; offlineVotes={}; offlinePhase='VOTE'; render();" class="w-full py-3 rounded-2xl bg-amber-500 font-bold text-xs text-slate-950">
+            ${t('startDiscuss')} & Vote ➔
+          </button>
+        </div>
+      `;
+    }
+
+    function renderOfflineVote() {
+      const living = offlinePlayers.filter(p => p.isAlive);
+      const voter = living[offlineStep];
+
+      if (!voter) {
+        tallyOfflineVotes();
+        return;
+      }
+
+      appRoot.innerHTML = `
+        <div class="space-y-4 text-center">
+          <h3 class="text-lg font-black text-white">${t('passTo', { name: voter.name })}</h3>
+          <p class="text-xs text-slate-400">${t('voteTitle')}</p>
+
+          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-2 text-left">
+            <div class="grid grid-cols-2 gap-2">
+              ${living.filter(x => x.id !== voter.id).map(x => `
+                <button onclick="offlineVotes['${voter.id}']='${x.id}'; playBeep();" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white">${x.name}</button>
+              `).join('')}
+            </div>
+            <button onclick="offlineVotes['${voter.id}']='SKIP'; playBeep();" class="w-full py-2 bg-slate-800 rounded-xl text-xs font-bold text-slate-400">${t('skipVote')}</button>
+          </div>
+
+          <button onclick="nextOfflineVoteTurn()" class="w-full py-3 rounded-2xl bg-rose-600 font-bold text-xs text-white">
+            ${t('confirmVote')}
+          </button>
+        </div>
+      `;
+    }
+
+    function nextOfflineVoteTurn() {
+      const living = offlinePlayers.filter(p => p.isAlive);
+      offlineStep++;
+      if (offlineStep < living.length) {
+        render();
+      } else {
+        tallyOfflineVotes();
+      }
+    }
+
+    function tallyOfflineVotes() {
       const counts = {};
-      Object.values(gameState.votes).forEach(tId => {
+      Object.values(offlineVotes).forEach(tId => {
         if (tId !== 'SKIP') counts[tId] = (counts[tId] || 0) + 1;
       });
 
@@ -385,304 +478,94 @@
       });
 
       if (!tie && eliminatedId) {
-        const p = gameState.players.find(x => x.id === eliminatedId);
-        if (p) p.isAlive = false;
-      }
+        const victim = offlinePlayers.find(p => p.id === eliminatedId);
+        victim.isAlive = false;
 
-      // Check win
-      const living = gameState.players.filter(p => p.isAlive);
-      const mafiaLiving = living.filter(p => p.role === 'mafia');
-      if (mafiaLiving.length === 0) {
-        gameState.phase = 'WINNER';
-        gameState.winner = 'Town';
-      } else if (mafiaLiving.length >= (living.length - mafiaLiving.length)) {
-        gameState.phase = 'WINNER';
-        gameState.winner = 'Mafia';
-      } else {
-        gameState.phase = 'NIGHT';
-      }
-
-      broadcastGameState();
-      render();
-    }
-
-    /* =====================================================================
-       CLIENT ACTION DISPATCHERS
-    ===================================================================== */
-    let selectedNightTarget = null;
-    let selectedVoteTarget = null;
-    let actionDone = false;
-
-    function sendNightAction(actionType) {
-      if (!selectedNightTarget) return;
-      actionDone = true;
-      if (isHost) {
-        if (actionType === 'mafia') gameState.nightActions.mafia = selectedNightTarget;
-        if (actionType === 'doc') gameState.nightActions.doc = selectedNightTarget;
-        if (actionType === 'det') {
-          const target = gameState.players.find(p => p.id === selectedNightTarget);
-          alert(target && target.role === 'mafia' ? '⚠️ TARGET IS MAFIA!' : '🕊️ TARGET IS INNOCENT!');
+        if (victim.role === 'jester') {
+          triggerOfflineWin('Jester');
+          return;
         }
-        checkNightResolution();
-      } else {
-        hostConn.send({ type: 'NIGHT_ACTION', action: actionType, target: selectedNightTarget });
       }
+
+      const living = offlinePlayers.filter(p => p.isAlive);
+      const mafiaLiving = living.filter(p => p.role === 'mafia');
+      if (mafiaLiving.length === 0) triggerOfflineWin('Town');
+      else if (mafiaLiving.length >= (living.length - mafiaLiving.length)) triggerOfflineWin('Mafia');
+      else {
+        offlineStep = 0;
+        nightChoices = { mafia: null, doc: null, det: null };
+        offlinePhase = 'NIGHT';
+        render();
+      }
+    }
+
+    let offlineWinnerTeam = null;
+    function triggerOfflineWin(team) {
+      offlineWinnerTeam = team;
+      offlinePhase = 'WINNER';
       render();
     }
 
-    function sendVoteAction() {
-      if (!selectedVoteTarget) return;
-      actionDone = true;
-      if (isHost) {
-        gameState.votes[myId] = selectedVoteTarget;
-        checkVoteResolution();
-      } else {
-        hostConn.send({ type: 'VOTE', target: selectedVoteTarget });
-      }
-      render();
-    }
-
-    /* =====================================================================
-       RENDER DISPATCHER
-    ===================================================================== */
-    const appRoot = document.getElementById('appRoot');
-
-    function render() {
-      if (!peer) {
-        renderLobbyJoin();
-      } else if (gameState.phase === 'LOBBY') {
-        renderLobbyWaiting();
-      } else if (gameState.phase === 'NIGHT') {
-        renderNightPhase();
-      } else if (gameState.phase === 'DAY') {
-        renderDayPhase();
-      } else if (gameState.phase === 'WINNER') {
-        renderWinner();
-      }
-    }
-
-    function renderLobbyJoin() {
-      appRoot.innerHTML = `
-        <div class="space-y-4">
-          <div class="text-center">
-            <h2 class="text-2xl font-black cinzel text-white">${t('joinOrHostTitle')}</h2>
-            <p class="text-xs text-slate-400">${t('joinOrHostSub')}</p>
-          </div>
-
-          <div class="p-5 rounded-3xl bg-slate-900 border border-slate-800 space-y-3 shadow-xl">
-            <input id="nameInput" type="text" placeholder="${t('enterYourName')}"
-              class="w-full bg-slate-950 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-rose-500">
-
-            <button onclick="initHost()" class="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 font-bold text-sm text-white shadow-xl shadow-rose-900/40">
-              ${t('createRoomBtn')}
-            </button>
-          </div>
-
-          <div class="p-5 rounded-3xl bg-slate-900/80 border border-slate-800/80 space-y-3">
-            <p class="text-xs text-slate-400 font-bold">${t('orJoinRoom')}</p>
-            <div class="flex gap-2">
-              <input id="codeInput" type="text" placeholder="${t('roomCodePlaceholder')}" maxlength="4"
-                class="flex-1 bg-slate-950 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm font-black tracking-widest uppercase text-center text-amber-400 focus:outline-none focus:border-amber-500">
-              <button onclick="initClient()" class="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 font-bold text-sm text-slate-950">
-                ${t('joinBtn')}
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderLobbyWaiting() {
-      appRoot.innerHTML = `
-        <div class="space-y-4 text-center">
-          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-2">
-            <p class="text-xs font-bold text-slate-400">${t('roomCodeLabel')}</p>
-            <h2 class="text-4xl font-black tracking-widest text-amber-400 cinzel font-mono">${roomCode}</h2>
-            <p class="text-xs text-slate-400">${t('shareCodeInfo')}</p>
-          </div>
-
-          <div class="p-4 rounded-3xl bg-slate-900/70 border border-slate-800 text-left space-y-2">
-            <p class="text-xs font-bold text-slate-400">${t('playersJoined')} (${gameState.players.length})</p>
-            <div class="space-y-1.5 max-h-48 overflow-y-auto">
-              ${gameState.players.map((p, idx) => `
-                <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
-                  <span class="text-xs font-bold text-white">${p.name} ${p.id === myId ? '(You)' : ''}</span>
-                  <span class="text-[10px] text-slate-500 font-bold">#${idx + 1}</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-
-          ${isHost ? `
-            <button onclick="hostStartGame()" ${gameState.players.length < 4 ? 'disabled' : ''} 
-              class="w-full py-4 rounded-2xl font-black text-sm uppercase shadow-xl ${
-                gameState.players.length < 4 
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed' 
-                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/50'
-              }">
-              ${t('startGameBtn')}
-            </button>
-            ${gameState.players.length < 4 ? `<p class="text-[11px] text-rose-400 font-bold">${t('minPlayersWarning')}</p>` : ''}
-          ` : `
-            <div class="p-4 rounded-2xl bg-indigo-950/40 border border-indigo-800/40">
-              <p class="text-xs font-bold text-indigo-300 animate-pulse">${t('waitingHost')}</p>
-            </div>
-          `}
-        </div>
-      `;
-    }
-
-    function renderNightPhase() {
-      const living = gameState.players.filter(p => p.isAlive);
-      const isMeAlive = living.some(p => p.id === myId);
-
-      appRoot.innerHTML = `
-        <div class="space-y-4">
-          <div class="text-center">
-            <span class="text-3xl block">🌙</span>
-            <span class="text-xs font-bold text-indigo-400 bg-indigo-950/60 px-3 py-1 rounded-full border border-indigo-800/40">${t('nightTitle')}</span>
-            <div class="mt-2 p-2.5 rounded-2xl bg-slate-900 border border-slate-800 inline-block">
-              <span class="text-xs text-slate-400">${t('yourSecretRole')} </span>
-              <span class="text-xs font-black uppercase text-amber-400">${myRole || 'Villager'}</span>
-            </div>
-          </div>
-
-          <div class="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-3">
-            ${!isMeAlive ? `
-              <div class="text-center py-6 text-rose-400 font-bold text-sm">మీరు ఆటలో చనిపోయారు. సైలెంట్ గా ఉండండి!</div>
-            ` : actionDone ? `
-              <div class="text-center py-6 text-emerald-400 font-bold text-sm animate-pulse">${t('nightWait')}</div>
-            ` : myRole === 'mafia' ? `
-              <p class="text-xs font-bold text-rose-400">${t('mafiaTargetTitle')}</p>
-              <div class="grid grid-cols-2 gap-2">
-                ${living.filter(p => p.id !== myId).map(p => `
-                  <button onclick="selectedNightTarget='${p.id}'; render();" class="p-3 rounded-2xl border text-xs font-bold text-left truncate ${
-                    selectedNightTarget === p.id ? 'border-rose-500 bg-rose-950 text-white' : 'border-slate-800 bg-slate-950 text-slate-300'
-                  }">${p.name}</button>
-                `).join('')}
-              </div>
-              <button onclick="sendNightAction('mafia')" class="w-full py-3 rounded-xl bg-rose-600 font-bold text-xs text-white">${t('doneBtn')}</button>
-            ` : myRole === 'doctor' ? `
-              <p class="text-xs font-bold text-emerald-400">${t('docTargetTitle')}</p>
-              <div class="grid grid-cols-2 gap-2">
-                ${living.map(p => `
-                  <button onclick="selectedNightTarget='${p.id}'; render();" class="p-3 rounded-2xl border text-xs font-bold text-left truncate ${
-                    selectedNightTarget === p.id ? 'border-emerald-500 bg-emerald-950 text-white' : 'border-slate-800 bg-slate-950 text-slate-300'
-                  }">${p.name}</button>
-                `).join('')}
-              </div>
-              <button onclick="sendNightAction('doc')" class="w-full py-3 rounded-xl bg-emerald-600 font-bold text-xs text-white">${t('doneBtn')}</button>
-            ` : myRole === 'detective' ? `
-              <p class="text-xs font-bold text-cyan-400">${t('detTargetTitle')}</p>
-              <div class="grid grid-cols-2 gap-2">
-                ${living.filter(p => p.id !== myId).map(p => `
-                  <button onclick="selectedNightTarget='${p.id}'; render();" class="p-3 rounded-2xl border text-xs font-bold text-left truncate ${
-                    selectedNightTarget === p.id ? 'border-cyan-500 bg-cyan-950 text-white' : 'border-slate-800 bg-slate-950 text-slate-300'
-                  }">${p.name}</button>
-                `).join('')}
-              </div>
-              <button onclick="sendNightAction('det')" class="w-full py-3 rounded-xl bg-cyan-600 font-bold text-xs text-white">${t('doneBtn')}</button>
-            ` : `
-              <div class="text-center py-6 space-y-2">
-                <span class="text-4xl block animate-pulse">😴</span>
-                <p class="font-black text-amber-300 text-sm">${t('villagerSleepTitle')}</p>
-                <p class="text-xs text-slate-400">${t('villagerSleepDesc')}</p>
-              </div>
-            `}
-          </div>
-
-          ${isHost ? `
-            <button onclick="resolveNight()" class="w-full py-3 rounded-2xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300">
-              (Host Override) Thellavaarindhi అనండి ➔
-            </button>
-          ` : ''}
-        </div>
-      `;
-    }
-
-    function renderDayPhase() {
-      const living = gameState.players.filter(p => p.isAlive);
-      const isMeAlive = living.some(p => p.id === myId);
-
-      appRoot.innerHTML = `
-        <div class="space-y-4">
-          <div class="text-center">
-            <span class="text-3xl block">☀️</span>
-            <span class="text-xs font-bold text-amber-400 bg-amber-950/60 px-3 py-1 rounded-full border border-amber-800/40">${t('dayTitle')}</span>
-          </div>
-
-          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 text-center">
-            <p class="text-sm font-black ${gameState.lastKilled ? 'text-rose-400' : 'text-emerald-400'}">
-              ${gameState.lastKilled ? t('killedAnnounce', { name: gameState.lastKilled }) : t('noKillAnnounce')}
-            </p>
-          </div>
-
-          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-3">
-            <p class="text-xs font-bold text-slate-400">${t('voteInstruction')}</p>
-            ${!isMeAlive ? `
-              <div class="text-center py-4 text-xs text-slate-500 font-bold">మీరు చనిపోయినందున ఓటు వేయలేరు.</div>
-            ` : actionDone ? `
-              <div class="text-center py-4 text-xs text-emerald-400 font-bold animate-pulse">${t('votedWait')}</div>
-            ` : `
-              <div class="grid grid-cols-2 gap-2">
-                ${living.filter(p => p.id !== myId).map(p => `
-                  <button onclick="selectedVoteTarget='${p.id}'; render();" class="p-2.5 rounded-2xl border text-xs font-bold text-left truncate ${
-                    selectedVoteTarget === p.id ? 'border-rose-500 bg-rose-950 text-white' : 'border-slate-800 bg-slate-950 text-slate-300'
-                  }">${p.name}</button>
-                `).join('')}
-              </div>
-              <button onclick="selectedVoteTarget='SKIP'; render();" class="w-full py-2 rounded-xl border text-xs font-bold ${
-                selectedVoteTarget === 'SKIP' ? 'border-amber-500 bg-amber-950 text-amber-300' : 'border-slate-800 bg-slate-950 text-slate-400'
-              }">${t('skipVote')}</button>
-              <button onclick="sendVoteAction()" class="w-full py-3 rounded-xl bg-rose-600 font-bold text-xs text-white">${t('confirmVote')}</button>
-            `}
-          </div>
-
-          ${isHost ? `
-            <button onclick="tallyDayVotes()" class="w-full py-3 rounded-2xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300">
-              (Host Override) ఓట్లు కౌంట్ చేయండి ➔
-            </button>
-          ` : ''}
-        </div>
-      `;
-    }
-
-    function renderWinner() {
-      const isMafia = gameState.winner === 'Mafia';
+    function renderOfflineWinner() {
       appRoot.innerHTML = `
         <div class="space-y-4 text-center py-6">
           <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-2">
-            <span class="text-5xl block">${isMafia ? '🔪' : '👑'}</span>
-            <h2 class="text-2xl font-black cinzel ${isMafia ? 'text-rose-500' : 'text-emerald-400'}">
-              ${isMafia ? 'MAFIA DOMINATION!' : 'TOWN TRIUMPH!'}
+            <span class="text-5xl block">${offlineWinnerTeam === 'Mafia' ? '🔪' : offlineWinnerTeam === 'Jester' ? '🃏' : '👑'}</span>
+            <h2 class="text-2xl font-black cinzel ${offlineWinnerTeam === 'Mafia' ? 'text-rose-500' : 'text-emerald-400'}">
+              ${offlineWinnerTeam.toUpperCase()} VICTORY!
             </h2>
-            <p class="text-xs text-slate-400">
-              ${isMafia ? 'మాఫియా నగరాన్ని కైవసం చేసుకుంది!' : 'గ్రామస్థులు మాఫియాని అంతమొందించి విజయం సాధించారు!'}
-            </p>
           </div>
-
-          <button onclick="location.reload()" class="w-full py-3.5 rounded-2xl bg-rose-600 font-bold text-sm text-white">
-            ${t('playAgain')}
+          <button onclick="offlinePhase='MODE_SELECT'; render();" class="w-full py-3 rounded-2xl bg-rose-600 font-bold text-xs text-white">
+            ${t('restart')}
           </button>
         </div>
       `;
     }
 
-    function openRulesModal() {
-      document.getElementById('rulesModal').classList.remove('hidden');
-      document.getElementById('modalRulesTitle').innerText = t('rulesBtn');
-      document.getElementById('modalRulesCloseBtn').innerText = 'OK';
-      document.getElementById('modalRulesContent').innerHTML = currentLang === 'te' ? `
-        <p><b>1. రూమ్ క్రియేట్ చేయండి:</b> ఒకరు హోస్ట్ అయ్యి 4-అక్షరాల కోడ్ ఫ్రెండ్స్ కి షేర్ చేయాలి.</p>
-        <p><b>2. స్వంత ఫోన్:</b> అందరూ వాళ్ళ సొంత ఫోన్ లోనే రోల్స్ చూస్తారు, పక్కనోళ్ళకి ఏమాత్రం తెలియదు.</p>
-        <p><b>3. రాత్రి వేళ:</b> మాఫియా, డాక్టర్, డిటెక్టివ్ వాళ్ళ స్క్రీన్ లోనే టార్గెట్ సెలెక్ట్ చేస్తారు.</p>
-      ` : `
-        <p><b>1. Host Room:</b> One person creates the room and shares the 4-letter code.</p>
-        <p><b>2. Privacy:</b> Everyone receives their role on their individual phone secretly.</p>
-        <p><b>3. Night Phase:</b> Targets are chosen silently on personal screens without passing phones.</p>
+    /* ================= 3. MULTIPLAYER (ROOM CODE) ================= */
+    function renderMultiplayer() {
+      appRoot.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-white text-base">Multi-Device Room</h3>
+            <button onclick="offlinePhase='MODE_SELECT'; render();" class="text-xs text-slate-400 underline">Mode Change</button>
+          </div>
+
+          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-3">
+            <input id="onlineNameInput" type="text" placeholder="Mee peru..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+            <button onclick="initHostOnline()" class="w-full py-2.5 rounded-xl bg-rose-600 font-bold text-xs text-white">Create Room (Host)</button>
+          </div>
+
+          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-2">
+            <p class="text-xs text-slate-400">Join with Code:</p>
+            <div class="flex gap-2">
+              <input id="onlineCodeInput" type="text" placeholder="CODE" maxlength="4" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs uppercase text-amber-400 text-center font-bold">
+              <button onclick="initClientOnline()" class="px-4 py-2 bg-amber-500 rounded-xl text-xs font-bold text-slate-950">Join</button>
+            </div>
+          </div>
+        </div>
       `;
     }
-    function closeRulesModal() { document.getElementById('rulesModal').classList.add('hidden'); }
+
+    function initHostOnline() {
+      const name = document.getElementById('onlineNameInput').value.trim() || 'Host';
+      const code = Math.random().toString(36).substring(2, 6).toUpperCase();
+      peer = new Peer('mafia_' + code.toLowerCase());
+      peer.on('open', () => {
+        alert('Room Created! Code: ' + code);
+      });
+      peer.on('error', () => alert('Error creating room, please try again.'));
+    }
+    function initClientOnline() {
+      const code = document.getElementById('onlineCodeInput').value.trim();
+      if (!code) return;
+      peer = new Peer();
+      peer.on('open', () => {
+        const conn = peer.connect('mafia_' + code.toLowerCase());
+        conn.on('open', () => alert('Connected to Room ' + code));
+      });
+      peer.on('error', () => alert('Cannot connect to room.'));
+    }
 
     render();
   </script>
