@@ -28,7 +28,7 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between overflow-x-hidden">
 
-  <!-- TOP HEADER -->
+  <!-- TOP BAR -->
   <header class="p-3 border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40 flex items-center justify-between">
     <div class="flex items-center gap-2">
       <span class="text-xl">🕶️</span>
@@ -72,7 +72,6 @@
         multiPhoneDesc: 'ఆన్‌లైన్ రూమ్ కోడ్ తో అందరూ కనెక్ట్ అవుతారు',
         namePrompt: 'ఫ్రెండ్ పేరు రాయండి...',
         passTo: 'ఫోన్ {name} కి ఇవ్వండి',
-        holdToView: '👆 హోల్డ్ చేసి రోల్ చూడండి (Hold to View)',
         nightTitle: 'రాత్రి వేళ 🌙',
         morningTitle: 'తెల్లవారింది ☀️',
         killedMsg: '🚨 ఈ రాత్రి మాఫియా దాడిలో {name} చనిపోయారు!',
@@ -80,7 +79,6 @@
         startDiscuss: 'చర్చలు మొదలుపెట్టండి 🗣️',
         voteTitle: 'ఓటింగ్ ఛాంబర్ 🗳️',
         skipVote: '🤷 ఎవరికీ ఓటు వేయను (Skip)',
-        confirmVote: 'ఓటు నమోదు చేయండి ➔',
         restart: 'మళ్ళీ కొత్త ఆట 🔄'
       },
       en: {
@@ -93,7 +91,6 @@
         multiPhoneDesc: 'Everyone joins with Room Code on personal phones',
         namePrompt: 'Enter friend name...',
         passTo: 'Pass phone to {name}',
-        holdToView: '👆 Hold to Reveal & Act',
         nightTitle: 'Night Falls 🌙',
         morningTitle: 'Sunrise Gazette ☀️',
         killedMsg: '🚨 {name} was eliminated by the Mafia last night!',
@@ -101,7 +98,6 @@
         startDiscuss: 'Start Discussion 🗣️',
         voteTitle: 'Voting Chamber 🗳️',
         skipVote: '🤷 Skip Vote',
-        confirmVote: 'Confirm Vote ➔',
         restart: 'Play Again 🔄'
       }
     };
@@ -155,6 +151,10 @@
     let nightChoices = { mafia: null, doc: null, det: null };
     let lastKilledName = null;
     let offlineVotes = {};
+
+    let isRevealUnlocked = false;
+    let isNightUnlocked = false;
+    let isVoteUnlocked = false;
 
     /* Multiplayer PeerJS State */
     let peer = null, isHost = false, roomCode = '';
@@ -271,70 +271,62 @@
       offlinePlayers.forEach((p, idx) => { p.role = roles[idx]; p.isAlive = true; });
 
       offlineStep = 0;
+      isRevealUnlocked = false;
       offlinePhase = 'REVEAL';
       render();
     }
 
-    /* REVEAL SCREEN WITH PRIVACY HOLD */
+    /* REVEAL (TAP TO UNLOCK & PROCEED) */
     function renderOfflineReveal() {
       const player = offlinePlayers[offlineStep];
       appRoot.innerHTML = `
         <div class="space-y-4 text-center">
           <p class="text-[10px] font-bold text-rose-400 uppercase tracking-widest bg-rose-950/60 px-3 py-1 rounded-full border border-rose-800/40 inline-block">రహస్య పాత్ర</p>
           <h2 class="text-2xl font-black text-white">${t('passTo', { name: player.name })}</h2>
-          <p class="text-xs text-slate-400">ఎవరూ చూడకుండా ప్రైవేట్‌గా బటన్ ప్రెస్ చేసి ఉంచండి</p>
+          <p class="text-xs text-slate-400">ఎవరూ చూడకుండా ప్రైవేట్‌గా అన్‌లాక్ చేయండి</p>
 
-          <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 min-h-[180px] flex flex-col justify-center items-center shadow-xl">
-            <div id="revealSecretCard" class="hidden space-y-2">
-              <span class="text-5xl block animate-bounce">🎭</span>
-              <p class="text-2xl font-black text-amber-400 uppercase tracking-wider">${player.role}</p>
-              <p class="text-xs text-slate-300">రోల్ గుర్తుపెట్టుకుని చెయ్యి తీసేయండి!</p>
-            </div>
-
-            <div id="revealLockCover" class="space-y-2">
-              <span class="text-4xl block">🔒</span>
-              <p class="text-xs font-bold text-rose-400">లాక్ చేయబడింది</p>
-              <p class="text-[10px] text-slate-500">కింది బటన్ ని హోల్డ్ చేయండి</p>
-            </div>
+          <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 min-h-[190px] flex flex-col justify-center items-center shadow-xl">
+            ${isRevealUnlocked ? `
+              <div class="space-y-2">
+                <span class="text-5xl block animate-bounce">🎭</span>
+                <p class="text-2xl font-black text-amber-400 uppercase tracking-wider">${player.role}</p>
+                <p class="text-xs text-slate-300">మీ రోల్ గుర్తుపెట్టుకుని కింద బటన్ నొక్కండి</p>
+              </div>
+            ` : `
+              <div class="space-y-3">
+                <span class="text-4xl block">🔒</span>
+                <p class="text-xs font-bold text-rose-400">లాక్ చేయబడింది</p>
+                <button onclick="isRevealUnlocked=true; playBeep(520, 0.05); render();" class="px-6 py-2.5 rounded-2xl bg-indigo-600 font-black text-xs text-white shadow-lg">
+                  🔓 Tap to Reveal Role
+                </button>
+              </div>
+            `}
           </div>
 
-          <button 
-            onmousedown="showRolePeek()" onmouseup="hideRolePeek()" 
-            ontouchstart="showRolePeek()" ontouchend="hideRolePeek()"
-            class="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-rose-600 active:scale-95 transition font-black text-xs text-white shadow-xl">
-            ${t('holdToView')}
-          </button>
-
-          <button onclick="nextReveal()" class="w-full py-3 rounded-2xl bg-slate-800 text-xs font-bold text-slate-300">
-            ${offlineStep < offlinePlayers.length - 1 ? 'తదుపరి ప్లేయర్ ➔' : 'రాత్రి ఆరంభించండి 🌙'}
-          </button>
+          ${isRevealUnlocked ? `
+            <button onclick="nextReveal()" class="w-full py-3.5 rounded-2xl bg-slate-800 font-bold text-xs text-white shadow-xl">
+              ${offlineStep < offlinePlayers.length - 1 ? 'గుర్తుంచుకున్నాను (Next Player) ➔' : 'రాత్రి ఆరంభించండి 🌙'}
+            </button>
+          ` : ''}
         </div>
       `;
     }
 
-    function showRolePeek() {
-      playBeep(520, 0.05);
-      document.getElementById('revealSecretCard').classList.remove('hidden');
-      document.getElementById('revealLockCover').classList.add('hidden');
-    }
-    function hideRolePeek() {
-      document.getElementById('revealSecretCard').classList.add('hidden');
-      document.getElementById('revealLockCover').classList.remove('hidden');
-    }
-
     function nextReveal() {
+      isRevealUnlocked = false;
       if (offlineStep < offlinePlayers.length - 1) {
         offlineStep++;
         render();
       } else {
         offlineStep = 0;
+        isNightUnlocked = false;
         nightChoices = { mafia: null, doc: null, det: null };
         offlinePhase = 'NIGHT';
         render();
       }
     }
 
-    /* NIGHT TURN WITH HOLD TO ACT PRIVACY */
+    /* NIGHT (TAP TO UNLOCK ➔ TAP TARGET ➔ INSTANT LOCK) */
     function renderOfflineNight() {
       const living = offlinePlayers.filter(p => p.isAlive);
       const player = living[offlineStep];
@@ -348,73 +340,53 @@
         <div class="space-y-4 text-center">
           <span class="text-3xl block">🌙</span>
           <h3 class="text-xl font-black text-white">${t('passTo', { name: player.name })}</h3>
-          <p class="text-[11px] text-slate-400">ఫోన్ మీ చేతికి వచ్చాక మాత్రమే కింద బటన్ హోల్డ్ చేయండి</p>
+          <p class="text-[11px] text-slate-400">ఫోన్ మీ చేతికి వచ్చాక మాత్రమే అన్‌లాక్ చేయండి</p>
 
           <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 min-h-[220px] flex flex-col justify-center shadow-xl">
-            
-            <!-- HIDDEN ACTION BOX (REVEALS ONLY ON HOLD) -->
-            <div id="nightActionBox" class="hidden text-left space-y-3">
-              ${player.role === 'mafia' ? `
-                <p class="text-xs font-bold text-rose-400">హత్య చేయాల్సిన టార్గెట్‌ని ఎంచుకోండి (Kill):</p>
-                <div class="grid grid-cols-2 gap-2">
-                  ${living.filter(x => x.id !== player.id).map(x => `
-                    <button onclick="nightChoices.mafia='${x.id}'; playBeep(700, 0.1);" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white hover:border-rose-500">${x.name}</button>
-                  `).join('')}
-                </div>
-              ` : player.role === 'doctor' ? `
-                <p class="text-xs font-bold text-emerald-400">ఎవరిని కాపాడాలనుకుంటున్నారు? (Save):</p>
-                <div class="grid grid-cols-2 gap-2">
-                  ${living.map(x => `
-                    <button onclick="nightChoices.doc='${x.id}'; playBeep(700, 0.1);" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white hover:border-emerald-500">${x.name}</button>
-                  `).join('')}
-                </div>
-              ` : player.role === 'detective' ? `
-                <p class="text-xs font-bold text-cyan-400">ఎవరి గుర్తింపు తనిఖీ చేయాలి? (Check):</p>
-                <div class="grid grid-cols-2 gap-2">
-                  ${living.filter(x => x.id !== player.id).map(x => `
-                    <button onclick="inspectSingleDet('${x.id}')" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white hover:border-cyan-500">${x.name}</button>
-                  `).join('')}
-                </div>
-              ` : `
-                <div class="text-center py-4 space-y-2">
-                  <p class="text-xs font-bold text-amber-300">మీరు నిద్రపోతున్నారు (Villager)</p>
-                  <p class="text-[10px] text-slate-400">అనుమానం రాకుండా డమ్మీ యాక్షన్ పై ట్యాప్ చేయండి</p>
-                  <button onclick="playBeep(600, 0.05)" class="px-4 py-2 bg-slate-800 rounded-xl text-xs font-bold text-white">Tap Fake Action</button>
-                </div>
-              `}
-            </div>
-
-            <!-- LOCKED OVERLAY -->
-            <div id="nightLockCover" class="py-6 space-y-2">
-              <span class="text-4xl block">🔒</span>
-              <p class="text-xs font-bold text-rose-400">రోల్ & యాక్షన్ లాక్ చేయబడింది</p>
-              <p class="text-[10px] text-slate-500">కింద బటన్ ని ప్రెస్ చేసి పట్టుకోండి</p>
-            </div>
-
+            ${isNightUnlocked ? `
+              <div class="text-left space-y-3">
+                ${player.role === 'mafia' ? `
+                  <p class="text-xs font-bold text-rose-400">హత్య చేయాల్సిన టార్గెట్‌ని ఎంచుకోండి (Kill):</p>
+                  <div class="grid grid-cols-2 gap-2">
+                    ${living.filter(x => x.id !== player.id).map(x => `
+                      <button onclick="nightChoices.mafia='${x.id}'; playBeep(700, 0.1); lockNightAndNext();" class="p-3 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white hover:border-rose-500 active:bg-rose-900">${x.name}</button>
+                    `).join('')}
+                  </div>
+                ` : player.role === 'doctor' ? `
+                  <p class="text-xs font-bold text-emerald-400">ఎవరిని కాపాడాలనుకుంటున్నారు? (Save):</p>
+                  <div class="grid grid-cols-2 gap-2">
+                    ${living.map(x => `
+                      <button onclick="nightChoices.doc='${x.id}'; playBeep(700, 0.1); lockNightAndNext();" class="p-3 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white hover:border-emerald-500 active:bg-emerald-900">${x.name}</button>
+                    `).join('')}
+                  </div>
+                ` : player.role === 'detective' ? `
+                  <p class="text-xs font-bold text-cyan-400">ఎవరి గుర్తింపు తనిఖీ చేయాలి? (Check):</p>
+                  <div class="grid grid-cols-2 gap-2">
+                    ${living.filter(x => x.id !== player.id).map(x => `
+                      <button onclick="inspectSingleDet('${x.id}'); lockNightAndNext();" class="p-3 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white hover:border-cyan-500 active:bg-cyan-900">${x.name}</button>
+                    `).join('')}
+                  </div>
+                ` : `
+                  <div class="text-center py-4 space-y-3">
+                    <p class="text-sm font-bold text-amber-300">మీరు నిద్రపోతున్నారు (Villager 😴)</p>
+                    <p class="text-[11px] text-slate-400">మీకు శక్తులు లేవు. కింద బటన్ ట్యాప్ చేసి పాస్ చేయండి!</p>
+                    <button onclick="playBeep(600, 0.05); lockNightAndNext();" class="px-5 py-2.5 bg-slate-800 rounded-xl text-xs font-bold text-white border border-slate-700">Fake Tap & Pass</button>
+                  </div>
+                `}
+              </div>
+            ` : `
+              <div class="py-6 space-y-3">
+                <span class="text-4xl block">🔒</span>
+                <p class="text-xs font-bold text-rose-400">రోల్ & యాక్షన్ లాక్ చేయబడింది</p>
+                <p class="text-[10px] text-slate-500">ఎవరూ చూడకుండా చూసుకొని అన్‌లాక్ చేయండి</p>
+                <button onclick="isNightUnlocked=true; playBeep(450, 0.05); render();" class="px-6 py-2.5 rounded-2xl bg-indigo-600 font-black text-xs text-white shadow-lg">
+                  🔓 Tap to Unlock Screen
+                </button>
+              </div>
+            `}
           </div>
-
-          <button 
-            onmousedown="revealNightAction()" onmouseup="hideNightAction()" 
-            ontouchstart="revealNightAction()" ontouchend="hideNightAction()"
-            class="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-rose-600 active:scale-95 transition font-black text-xs text-white shadow-xl">
-            ${t('holdToView')}
-          </button>
-
-          <button onclick="nextOfflineNightTurn()" class="w-full py-3 rounded-2xl bg-slate-800 font-bold text-xs text-slate-300">
-            పూర్తయింది (Pass to Next) ➔
-          </button>
         </div>
       `;
-    }
-
-    function revealNightAction() {
-      playBeep(450, 0.05);
-      document.getElementById('nightActionBox').classList.remove('hidden');
-      document.getElementById('nightLockCover').classList.add('hidden');
-    }
-    function hideNightAction() {
-      document.getElementById('nightActionBox').classList.add('hidden');
-      document.getElementById('nightLockCover').classList.remove('hidden');
     }
 
     function inspectSingleDet(tId) {
@@ -422,7 +394,8 @@
       alert(target.role === 'mafia' ? '⚠️ టార్గెట్ MAFIA!' : '🕊️ టార్గెట్ INNOCENT!');
     }
 
-    function nextOfflineNightTurn() {
+    function lockNightAndNext() {
+      isNightUnlocked = false;
       const living = offlinePlayers.filter(p => p.isAlive);
       offlineStep++;
       if (offlineStep < living.length) {
@@ -468,14 +441,14 @@
             </p>
           </div>
 
-          <button onclick="offlineStep=0; offlineVotes={}; offlinePhase='VOTE'; render();" class="w-full py-3.5 rounded-2xl bg-amber-500 font-bold text-xs text-slate-950 shadow-xl">
+          <button onclick="offlineStep=0; isVoteUnlocked=false; offlineVotes={}; offlinePhase='VOTE'; render();" class="w-full py-3.5 rounded-2xl bg-amber-500 font-bold text-xs text-slate-950 shadow-xl">
             ${t('startDiscuss')} & ఓటింగ్ రౌండ్ ➔
           </button>
         </div>
       `;
     }
 
-    /* VOTING WITH PRIVACY HOLD */
+    /* VOTING (TAP TO UNLOCK ➔ TAP TARGET ➔ INSTANT LOCK) */
     function renderOfflineVote() {
       const living = offlinePlayers.filter(p => p.isAlive);
       const voter = living[offlineStep];
@@ -490,49 +463,34 @@
           <h3 class="text-lg font-black text-white">${t('passTo', { name: voter.name })}</h3>
           <p class="text-xs text-slate-400">${t('voteTitle')}</p>
 
-          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 min-h-[180px] flex flex-col justify-center shadow-xl">
-            <div id="voteBox" class="hidden space-y-2 text-left">
-              <p class="text-xs font-bold text-slate-400">అనుమానితుడిని ఎంచుకోండి:</p>
-              <div class="grid grid-cols-2 gap-2">
-                ${living.filter(x => x.id !== voter.id).map(x => `
-                  <button onclick="offlineVotes['${voter.id}']='${x.id}'; playBeep(650, 0.08);" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white hover:border-rose-500">${x.name}</button>
-                `).join('')}
+          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 min-h-[190px] flex flex-col justify-center shadow-xl">
+            ${isVoteUnlocked ? `
+              <div class="space-y-3 text-left">
+                <p class="text-xs font-bold text-slate-300">అనుమానితుడిని ట్యాప్ చేసి ఓటు వేయండి:</p>
+                <div class="grid grid-cols-2 gap-2">
+                  ${living.filter(x => x.id !== voter.id).map(x => `
+                    <button onclick="offlineVotes['${voter.id}']='${x.id}'; playBeep(650, 0.08); lockVoteAndNext();" class="p-3 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white hover:border-rose-500 active:bg-rose-900">${x.name}</button>
+                  `).join('')}
+                </div>
+                <button onclick="offlineVotes['${voter.id}']='SKIP'; playBeep(500, 0.08); lockVoteAndNext();" class="w-full py-2.5 bg-slate-800 rounded-xl text-xs font-bold text-slate-400 mt-2">${t('skipVote')}</button>
               </div>
-              <button onclick="offlineVotes['${voter.id}']='SKIP'; playBeep(500, 0.08);" class="w-full py-2 bg-slate-800 rounded-xl text-xs font-bold text-slate-400 mt-2">${t('skipVote')}</button>
-            </div>
-
-            <div id="voteLockCover" class="space-y-2">
-              <span class="text-3xl block">🔒</span>
-              <p class="text-xs font-bold text-rose-400">రహస్య ఓటింగ్</p>
-              <p class="text-[10px] text-slate-500">ఓటు వేయడానికి కింద బటన్ పట్టుకోండి</p>
-            </div>
+            ` : `
+              <div class="py-6 space-y-3">
+                <span class="text-4xl block">🔒</span>
+                <p class="text-xs font-bold text-rose-400">రహస్య ఓటింగ్ చాంబర్</p>
+                <p class="text-[10px] text-slate-500">ఓటు వేయడానికి అన్‌లాక్ చేయండి</p>
+                <button onclick="isVoteUnlocked=true; playBeep(450, 0.05); render();" class="px-6 py-2.5 rounded-2xl bg-rose-600 font-black text-xs text-white shadow-lg">
+                  🔓 Tap to Unlock Vote
+                </button>
+              </div>
+            `}
           </div>
-
-          <button 
-            onmousedown="showVoteOptions()" onmouseup="hideVoteOptions()" 
-            ontouchstart="showVoteOptions()" ontouchend="hideVoteOptions()"
-            class="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-600 to-indigo-600 active:scale-95 transition font-black text-xs text-white shadow-xl">
-            👆 HOLD TO VOTE (ఓటు వేయండి)
-          </button>
-
-          <button onclick="nextOfflineVoteTurn()" class="w-full py-3 rounded-2xl bg-slate-800 font-bold text-xs text-slate-300">
-            ${t('confirmVote')}
-          </button>
         </div>
       `;
     }
 
-    function showVoteOptions() {
-      playBeep(450, 0.05);
-      document.getElementById('voteBox').classList.remove('hidden');
-      document.getElementById('voteLockCover').classList.add('hidden');
-    }
-    function hideVoteOptions() {
-      document.getElementById('voteBox').classList.add('hidden');
-      document.getElementById('voteLockCover').classList.remove('hidden');
-    }
-
-    function nextOfflineVoteTurn() {
+    function lockVoteAndNext() {
+      isVoteUnlocked = false;
       const living = offlinePlayers.filter(p => p.isAlive);
       offlineStep++;
       if (offlineStep < living.length) {
@@ -570,6 +528,7 @@
       else if (mafiaLiving.length >= (living.length - mafiaLiving.length)) triggerOfflineWin('Mafia');
       else {
         offlineStep = 0;
+        isNightUnlocked = false;
         nightChoices = { mafia: null, doc: null, det: null };
         offlinePhase = 'NIGHT';
         render();
@@ -642,7 +601,6 @@
       peer.on('error', () => alert('Cannot connect. Check code.'));
     }
 
-    // Initialize App
     render();
   </script>
 </body>
