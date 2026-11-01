@@ -53,6 +53,15 @@
   <main id="appRoot" class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col justify-center"></main>
 
   <script>
+   // AUTO-UPDATE CODE START
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let registration of registrations) {
+          registration.update();
+        }
+      });
+    }
+    // AUTO-UPDATE CODE END
     let currentLang = 'te';
     let gameMode = null; // 'PASS_AND_PLAY' or 'ONLINE'
 
