@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Mafia Hybrid Edition</title>
+  <title>Mafia Hybrid Pro</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0a0b10">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,23 +22,19 @@
     }
     .cinzel { font-family: 'Cinzel', serif; }
     .telugu-font { font-family: 'Ramaraja', 'Plus Jakarta Sans', sans-serif; }
-    .perspective-1000 { perspective: 1000px; }
-    .transform-style-3d { transform-style: preserve-3d; }
-    .backface-hidden { backface-visibility: hidden; }
-    .rotate-y-180 { transform: rotateY(180deg); }
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between overflow-x-hidden">
 
-  <!-- TOP BAR -->
+  <!-- TOP HEADER -->
   <header class="p-3 border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40 flex items-center justify-between">
     <div class="flex items-center gap-2">
       <span class="text-xl">🕶️</span>
       <div>
         <h1 class="cinzel text-base font-black tracking-wider text-rose-500">MAFIA PRO</h1>
-        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Hybrid Party Game</p>
+        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Hybrid Edition</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -53,7 +49,7 @@
   <main id="appRoot" class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col justify-center"></main>
 
   <script>
-   // AUTO-UPDATE CODE START
+    // AUTO-UPDATE CODE
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(registrations => {
         for (let registration of registrations) {
@@ -61,33 +57,31 @@
         }
       });
     }
-    // AUTO-UPDATE CODE END
+
     let currentLang = 'te';
     let gameMode = null; // 'PASS_AND_PLAY' or 'ONLINE'
 
     const STRINGS = {
       te: {
         langBtn: 'EN',
-        chooseModeTitle: 'Ela Aadali Anukuntunnaru?',
-        chooseModeSub: 'Game mode ni select cheskondi',
-        singlePhoneBtn: '📱 Oke Phone lo Aadandi (Pass & Play)',
-        singlePhoneDesc: 'Okka mobile tho friends andharu kalisi aadochu',
-        multiPhoneBtn: '📶 Prathi Okkari Phone lo (Room Code)',
-        multiPhoneDesc: 'Online Room Code tho andharu connect avtharu',
-        namePrompt: 'Friend peru enter cheyyandi...',
-        addBtn: 'Add Player',
-        startRoleBtn: 'Roles Assign Cheyyandi',
-        passTo: 'Phone {name} ki ivvandi',
-        tapToSeeRole: 'Role chudadaniki hold cheyyandi',
-        nightTitle: 'Raathri Velayenu 🌙',
-        morningTitle: 'Thellavaarindhi ☀️',
-        killedMsg: '🚨 Ee raathri Mafia valla {name} chanipoyaru!',
-        savedMsg: '🛡️ Doctor kaapadadam valla evaru chavoru!',
-        startDiscuss: 'Charchalu Modhalupettandi 🗣️',
-        voteTitle: 'Voting Chamber 🗳️',
-        skipVote: '🤷 Skip Vote',
-        confirmVote: 'Vote Confirm Cheyyandi ➔',
-        restart: 'Malli Kothha Game 🔄'
+        chooseModeTitle: 'ఎలా ఆడాలి అనుకుంటున్నారు?',
+        chooseModeSub: 'గేమ్ మోడ్ ని సెలెక్ట్ చేసుకోండి',
+        singlePhoneBtn: '📱 ఒకే ఫోన్ లో ఆడండి (Pass & Play)',
+        singlePhoneDesc: 'ఒక్క మొబైల్ తో అందరూ కలసి ఆడుకోవచ్చు',
+        multiPhoneBtn: '📶 ప్రతి ఒక్కరి ఫోన్ లో (Room Code)',
+        multiPhoneDesc: 'ఆన్‌లైన్ రూమ్ కోడ్ తో అందరూ కనెక్ట్ అవుతారు',
+        namePrompt: 'ఫ్రెండ్ పేరు రాయండి...',
+        passTo: 'ఫోన్ {name} కి ఇవ్వండి',
+        holdToView: '👆 హోల్డ్ చేసి రోల్ చూడండి (Hold to View)',
+        nightTitle: 'రాత్రి వేళ 🌙',
+        morningTitle: 'తెల్లవారింది ☀️',
+        killedMsg: '🚨 ఈ రాత్రి మాఫియా దాడిలో {name} చనిపోయారు!',
+        savedMsg: '🛡️ డాక్టర్ కాపాడటం వల్ల ఎవరూ చనిపోలేదు!',
+        startDiscuss: 'చర్చలు మొదలుపెట్టండి 🗣️',
+        voteTitle: 'ఓటింగ్ ఛాంబర్ 🗳️',
+        skipVote: '🤷 ఎవరికీ ఓటు వేయను (Skip)',
+        confirmVote: 'ఓటు నమోదు చేయండి ➔',
+        restart: 'మళ్ళీ కొత్త ఆట 🔄'
       },
       en: {
         langBtn: 'TE',
@@ -96,12 +90,10 @@
         singlePhoneBtn: '📱 Pass & Play (Single Phone)',
         singlePhoneDesc: 'Everyone plays on one shared smartphone',
         multiPhoneBtn: '📶 Multi-Device (Room Code)',
-        multiPhoneDesc: 'Everyone joins with Room Code on their phone',
+        multiPhoneDesc: 'Everyone joins with Room Code on personal phones',
         namePrompt: 'Enter friend name...',
-        addBtn: 'Add Player',
-        startRoleBtn: 'Assign Roles',
         passTo: 'Pass phone to {name}',
-        tapToSeeRole: 'Hold to inspect your secret role',
+        holdToView: '👆 Hold to Reveal & Act',
         nightTitle: 'Night Falls 🌙',
         morningTitle: 'Sunrise Gazette ☀️',
         killedMsg: '🚨 {name} was eliminated by the Mafia last night!',
@@ -165,8 +157,7 @@
     let offlineVotes = {};
 
     /* Multiplayer PeerJS State */
-    let peer = null, isHost = false, roomCode = '', myId = '', myRole = '', hostConn = null, connections = [];
-    let onlineState = { phase: 'LOBBY', players: [], lastKilled: null, winner: null };
+    let peer = null, isHost = false, roomCode = '';
 
     const appRoot = document.getElementById('appRoot');
 
@@ -211,7 +202,7 @@
       render();
     }
 
-    /* ================= 2. PASS & PLAY (SINGLE PHONE) ================= */
+    /* ================= 2. PASS & PLAY ================= */
     function renderPassAndPlay() {
       if (offlinePhase === 'SETUP') renderOfflineSetup();
       else if (offlinePhase === 'REVEAL') renderOfflineReveal();
@@ -225,8 +216,8 @@
       appRoot.innerHTML = `
         <div class="space-y-4">
           <div class="flex items-center justify-between">
-            <h3 class="font-bold text-white text-base">Mee Gang Friends</h3>
-            <button onclick="offlinePhase='MODE_SELECT'; render();" class="text-xs text-slate-400 underline">Mode Change</button>
+            <h3 class="font-bold text-white text-base">మెంబర్స్ సెటప్</h3>
+            <button onclick="offlinePhase='MODE_SELECT'; render();" class="text-xs text-slate-400 underline">Change Mode</button>
           </div>
 
           <div class="flex gap-2">
@@ -246,9 +237,9 @@
 
           <button onclick="startSingleGame()" ${offlinePlayers.length < 4 ? 'disabled' : ''} 
             class="w-full py-3.5 rounded-2xl font-black text-xs uppercase shadow-xl ${
-              offlinePlayers.length < 4 ? 'bg-slate-800 text-slate-500' : 'bg-emerald-600 text-white'
+              offlinePlayers.length < 4 ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-emerald-600 text-white'
             }">
-            ${t('startRoleBtn')} (${offlinePlayers.length} Players)
+            రోల్స్ కేటాయించండి (${offlinePlayers.length} Players) ➔
           </button>
         </div>
       `;
@@ -284,33 +275,54 @@
       render();
     }
 
-    let isRevealedTemp = false;
+    /* REVEAL SCREEN WITH PRIVACY HOLD */
     function renderOfflineReveal() {
       const player = offlinePlayers[offlineStep];
       appRoot.innerHTML = `
         <div class="space-y-4 text-center">
-          <p class="text-xs font-bold text-rose-400 uppercase tracking-widest">Secret Role Assignment</p>
+          <p class="text-[10px] font-bold text-rose-400 uppercase tracking-widest bg-rose-950/60 px-3 py-1 rounded-full border border-rose-800/40 inline-block">రహస్య పాత్ర</p>
           <h2 class="text-2xl font-black text-white">${t('passTo', { name: player.name })}</h2>
+          <p class="text-xs text-slate-400">ఎవరూ చూడకుండా ప్రైవేట్‌గా బటన్ ప్రెస్ చేసి ఉంచండి</p>
 
-          <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-3 cursor-pointer" onclick="isRevealedTemp=!isRevealedTemp; render();">
-            <span class="text-4xl block">${isRevealedTemp ? '🎭' : '🔒'}</span>
-            ${isRevealedTemp ? `
-              <p class="text-xl font-black text-amber-400 uppercase">${player.role}</p>
-              <p class="text-xs text-slate-300">Gurtu pettukuni ventane tap chesi hide cheyyandi!</p>
-            ` : `
-              <p class="text-xs font-bold text-slate-400">${t('tapToSeeRole')}</p>
-            `}
+          <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 min-h-[180px] flex flex-col justify-center items-center shadow-xl">
+            <div id="revealSecretCard" class="hidden space-y-2">
+              <span class="text-5xl block animate-bounce">🎭</span>
+              <p class="text-2xl font-black text-amber-400 uppercase tracking-wider">${player.role}</p>
+              <p class="text-xs text-slate-300">రోల్ గుర్తుపెట్టుకుని చెయ్యి తీసేయండి!</p>
+            </div>
+
+            <div id="revealLockCover" class="space-y-2">
+              <span class="text-4xl block">🔒</span>
+              <p class="text-xs font-bold text-rose-400">లాక్ చేయబడింది</p>
+              <p class="text-[10px] text-slate-500">కింది బటన్ ని హోల్డ్ చేయండి</p>
+            </div>
           </div>
 
-          <button onclick="nextReveal()" class="w-full py-3 rounded-2xl bg-slate-800 text-xs font-bold text-white">
-            ${offlineStep < offlinePlayers.length - 1 ? 'Next Player ➔' : 'Raathri Modhalupettandi 🌙'}
+          <button 
+            onmousedown="showRolePeek()" onmouseup="hideRolePeek()" 
+            ontouchstart="showRolePeek()" ontouchend="hideRolePeek()"
+            class="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-rose-600 active:scale-95 transition font-black text-xs text-white shadow-xl">
+            ${t('holdToView')}
+          </button>
+
+          <button onclick="nextReveal()" class="w-full py-3 rounded-2xl bg-slate-800 text-xs font-bold text-slate-300">
+            ${offlineStep < offlinePlayers.length - 1 ? 'తదుపరి ప్లేయర్ ➔' : 'రాత్రి ఆరంభించండి 🌙'}
           </button>
         </div>
       `;
     }
 
+    function showRolePeek() {
+      playBeep(520, 0.05);
+      document.getElementById('revealSecretCard').classList.remove('hidden');
+      document.getElementById('revealLockCover').classList.add('hidden');
+    }
+    function hideRolePeek() {
+      document.getElementById('revealSecretCard').classList.add('hidden');
+      document.getElementById('revealLockCover').classList.remove('hidden');
+    }
+
     function nextReveal() {
-      isRevealedTemp = false;
       if (offlineStep < offlinePlayers.length - 1) {
         offlineStep++;
         render();
@@ -322,7 +334,7 @@
       }
     }
 
-    let offlineNightActionDone = false;
+    /* NIGHT TURN WITH HOLD TO ACT PRIVACY */
     function renderOfflineNight() {
       const living = offlinePlayers.filter(p => p.isAlive);
       const player = living[offlineStep];
@@ -336,49 +348,78 @@
         <div class="space-y-4 text-center">
           <span class="text-3xl block">🌙</span>
           <h3 class="text-xl font-black text-white">${t('passTo', { name: player.name })}</h3>
-          <p class="text-[11px] text-slate-400">Pakkana evaroo chudakunda chusukondi</p>
+          <p class="text-[11px] text-slate-400">ఫోన్ మీ చేతికి వచ్చాక మాత్రమే కింద బటన్ హోల్డ్ చేయండి</p>
 
-          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-3 text-left">
-            ${player.role === 'mafia' ? `
-              <p class="text-xs font-bold text-rose-400">Target ni choose chey (Kill):</p>
-              <div class="grid grid-cols-2 gap-2">
-                ${living.filter(x => x.id !== player.id).map(x => `
-                  <button onclick="nightChoices.mafia='${x.id}'; playBeep();" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white">${x.name}</button>
-                `).join('')}
-              </div>
-            ` : player.role === 'doctor' ? `
-              <p class="text-xs font-bold text-emerald-400">Evarini protect chesthav?:</p>
-              <div class="grid grid-cols-2 gap-2">
-                ${living.map(x => `
-                  <button onclick="nightChoices.doc='${x.id}'; playBeep();" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white">${x.name}</button>
-                `).join('')}
-              </div>
-            ` : player.role === 'detective' ? `
-              <p class="text-xs font-bold text-cyan-400">Evari role check chesthav?:</p>
-              <div class="grid grid-cols-2 gap-2">
-                ${living.filter(x => x.id !== player.id).map(x => `
-                  <button onclick="inspectSingleDet('${x.id}')" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white">${x.name}</button>
-                `).join('')}
-              </div>
-            ` : `
-              <div class="text-center py-4 space-y-2">
-                <p class="text-xs font-bold text-amber-300">Nuvvu Villager vi (Sleeping)</p>
-                <p class="text-[10px] text-slate-400">Pakkana vallaki doubt raakunda dummy buttons tap chesi pass cheyyandi!</p>
-                <button onclick="playBeep()" class="px-3 py-1 bg-slate-800 rounded-lg text-xs">Tap</button>
-              </div>
-            `}
+          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 min-h-[220px] flex flex-col justify-center shadow-xl">
+            
+            <!-- HIDDEN ACTION BOX (REVEALS ONLY ON HOLD) -->
+            <div id="nightActionBox" class="hidden text-left space-y-3">
+              ${player.role === 'mafia' ? `
+                <p class="text-xs font-bold text-rose-400">హత్య చేయాల్సిన టార్గెట్‌ని ఎంచుకోండి (Kill):</p>
+                <div class="grid grid-cols-2 gap-2">
+                  ${living.filter(x => x.id !== player.id).map(x => `
+                    <button onclick="nightChoices.mafia='${x.id}'; playBeep(700, 0.1);" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white hover:border-rose-500">${x.name}</button>
+                  `).join('')}
+                </div>
+              ` : player.role === 'doctor' ? `
+                <p class="text-xs font-bold text-emerald-400">ఎవరిని కాపాడాలనుకుంటున్నారు? (Save):</p>
+                <div class="grid grid-cols-2 gap-2">
+                  ${living.map(x => `
+                    <button onclick="nightChoices.doc='${x.id}'; playBeep(700, 0.1);" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white hover:border-emerald-500">${x.name}</button>
+                  `).join('')}
+                </div>
+              ` : player.role === 'detective' ? `
+                <p class="text-xs font-bold text-cyan-400">ఎవరి గుర్తింపు తనిఖీ చేయాలి? (Check):</p>
+                <div class="grid grid-cols-2 gap-2">
+                  ${living.filter(x => x.id !== player.id).map(x => `
+                    <button onclick="inspectSingleDet('${x.id}')" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white hover:border-cyan-500">${x.name}</button>
+                  `).join('')}
+                </div>
+              ` : `
+                <div class="text-center py-4 space-y-2">
+                  <p class="text-xs font-bold text-amber-300">మీరు నిద్రపోతున్నారు (Villager)</p>
+                  <p class="text-[10px] text-slate-400">అనుమానం రాకుండా డమ్మీ యాక్షన్ పై ట్యాప్ చేయండి</p>
+                  <button onclick="playBeep(600, 0.05)" class="px-4 py-2 bg-slate-800 rounded-xl text-xs font-bold text-white">Tap Fake Action</button>
+                </div>
+              `}
+            </div>
+
+            <!-- LOCKED OVERLAY -->
+            <div id="nightLockCover" class="py-6 space-y-2">
+              <span class="text-4xl block">🔒</span>
+              <p class="text-xs font-bold text-rose-400">రోల్ & యాక్షన్ లాక్ చేయబడింది</p>
+              <p class="text-[10px] text-slate-500">కింద బటన్ ని ప్రెస్ చేసి పట్టుకోండి</p>
+            </div>
+
           </div>
 
-          <button onclick="nextOfflineNightTurn()" class="w-full py-3 rounded-2xl bg-indigo-600 font-bold text-xs text-white">
-            Action Done ➔
+          <button 
+            onmousedown="revealNightAction()" onmouseup="hideNightAction()" 
+            ontouchstart="revealNightAction()" ontouchend="hideNightAction()"
+            class="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-rose-600 active:scale-95 transition font-black text-xs text-white shadow-xl">
+            ${t('holdToView')}
+          </button>
+
+          <button onclick="nextOfflineNightTurn()" class="w-full py-3 rounded-2xl bg-slate-800 font-bold text-xs text-slate-300">
+            పూర్తయింది (Pass to Next) ➔
           </button>
         </div>
       `;
     }
 
+    function revealNightAction() {
+      playBeep(450, 0.05);
+      document.getElementById('nightActionBox').classList.remove('hidden');
+      document.getElementById('nightLockCover').classList.add('hidden');
+    }
+    function hideNightAction() {
+      document.getElementById('nightActionBox').classList.add('hidden');
+      document.getElementById('nightLockCover').classList.remove('hidden');
+    }
+
     function inspectSingleDet(tId) {
       const target = offlinePlayers.find(p => p.id === tId);
-      alert(target.role === 'mafia' ? '⚠️ TARGET IS MAFIA!' : '🕊️ TARGET IS INNOCENT!');
+      alert(target.role === 'mafia' ? '⚠️ టార్గెట్ MAFIA!' : '🕊️ టార్గెట్ INNOCENT!');
     }
 
     function nextOfflineNightTurn() {
@@ -402,7 +443,6 @@
       }
       lastKilledName = victim ? victim.name : null;
 
-      // Check win
       const living = offlinePlayers.filter(p => p.isAlive);
       const mafiaLiving = living.filter(p => p.role === 'mafia');
       if (mafiaLiving.length === 0) {
@@ -415,25 +455,27 @@
       }
     }
 
+    /* MORNING GAZETTE */
     function renderOfflineGazette() {
       appRoot.innerHTML = `
         <div class="space-y-4 text-center">
           <span class="text-4xl block">☀️</span>
           <h2 class="text-xl font-black cinzel text-white">${t('morningTitle')}</h2>
 
-          <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-2">
+          <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-2 shadow-xl">
             <p class="text-sm font-black ${lastKilledName ? 'text-rose-400' : 'text-emerald-400'}">
               ${lastKilledName ? t('killedMsg', { name: lastKilledName }) : t('savedMsg')}
             </p>
           </div>
 
-          <button onclick="offlineStep=0; offlineVotes={}; offlinePhase='VOTE'; render();" class="w-full py-3 rounded-2xl bg-amber-500 font-bold text-xs text-slate-950">
-            ${t('startDiscuss')} & Vote ➔
+          <button onclick="offlineStep=0; offlineVotes={}; offlinePhase='VOTE'; render();" class="w-full py-3.5 rounded-2xl bg-amber-500 font-bold text-xs text-slate-950 shadow-xl">
+            ${t('startDiscuss')} & ఓటింగ్ రౌండ్ ➔
           </button>
         </div>
       `;
     }
 
+    /* VOTING WITH PRIVACY HOLD */
     function renderOfflineVote() {
       const living = offlinePlayers.filter(p => p.isAlive);
       const voter = living[offlineStep];
@@ -448,20 +490,46 @@
           <h3 class="text-lg font-black text-white">${t('passTo', { name: voter.name })}</h3>
           <p class="text-xs text-slate-400">${t('voteTitle')}</p>
 
-          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-2 text-left">
-            <div class="grid grid-cols-2 gap-2">
-              ${living.filter(x => x.id !== voter.id).map(x => `
-                <button onclick="offlineVotes['${voter.id}']='${x.id}'; playBeep();" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white">${x.name}</button>
-              `).join('')}
+          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 min-h-[180px] flex flex-col justify-center shadow-xl">
+            <div id="voteBox" class="hidden space-y-2 text-left">
+              <p class="text-xs font-bold text-slate-400">అనుమానితుడిని ఎంచుకోండి:</p>
+              <div class="grid grid-cols-2 gap-2">
+                ${living.filter(x => x.id !== voter.id).map(x => `
+                  <button onclick="offlineVotes['${voter.id}']='${x.id}'; playBeep(650, 0.08);" class="p-2.5 rounded-xl border border-slate-700 bg-slate-950 text-xs font-bold text-white hover:border-rose-500">${x.name}</button>
+                `).join('')}
+              </div>
+              <button onclick="offlineVotes['${voter.id}']='SKIP'; playBeep(500, 0.08);" class="w-full py-2 bg-slate-800 rounded-xl text-xs font-bold text-slate-400 mt-2">${t('skipVote')}</button>
             </div>
-            <button onclick="offlineVotes['${voter.id}']='SKIP'; playBeep();" class="w-full py-2 bg-slate-800 rounded-xl text-xs font-bold text-slate-400">${t('skipVote')}</button>
+
+            <div id="voteLockCover" class="space-y-2">
+              <span class="text-3xl block">🔒</span>
+              <p class="text-xs font-bold text-rose-400">రహస్య ఓటింగ్</p>
+              <p class="text-[10px] text-slate-500">ఓటు వేయడానికి కింద బటన్ పట్టుకోండి</p>
+            </div>
           </div>
 
-          <button onclick="nextOfflineVoteTurn()" class="w-full py-3 rounded-2xl bg-rose-600 font-bold text-xs text-white">
+          <button 
+            onmousedown="showVoteOptions()" onmouseup="hideVoteOptions()" 
+            ontouchstart="showVoteOptions()" ontouchend="hideVoteOptions()"
+            class="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-600 to-indigo-600 active:scale-95 transition font-black text-xs text-white shadow-xl">
+            👆 HOLD TO VOTE (ఓటు వేయండి)
+          </button>
+
+          <button onclick="nextOfflineVoteTurn()" class="w-full py-3 rounded-2xl bg-slate-800 font-bold text-xs text-slate-300">
             ${t('confirmVote')}
           </button>
         </div>
       `;
+    }
+
+    function showVoteOptions() {
+      playBeep(450, 0.05);
+      document.getElementById('voteBox').classList.remove('hidden');
+      document.getElementById('voteLockCover').classList.add('hidden');
+    }
+    function hideVoteOptions() {
+      document.getElementById('voteBox').classList.add('hidden');
+      document.getElementById('voteLockCover').classList.remove('hidden');
     }
 
     function nextOfflineVoteTurn() {
@@ -518,31 +586,32 @@
     function renderOfflineWinner() {
       appRoot.innerHTML = `
         <div class="space-y-4 text-center py-6">
-          <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-2">
+          <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-2 shadow-2xl">
             <span class="text-5xl block">${offlineWinnerTeam === 'Mafia' ? '🔪' : offlineWinnerTeam === 'Jester' ? '🃏' : '👑'}</span>
             <h2 class="text-2xl font-black cinzel ${offlineWinnerTeam === 'Mafia' ? 'text-rose-500' : 'text-emerald-400'}">
               ${offlineWinnerTeam.toUpperCase()} VICTORY!
             </h2>
+            <p class="text-xs text-slate-400">ఆట ముగిసింది!</p>
           </div>
-          <button onclick="offlinePhase='MODE_SELECT'; render();" class="w-full py-3 rounded-2xl bg-rose-600 font-bold text-xs text-white">
+          <button onclick="offlinePhase='MODE_SELECT'; render();" class="w-full py-3.5 rounded-2xl bg-rose-600 font-bold text-xs text-white shadow-xl">
             ${t('restart')}
           </button>
         </div>
       `;
     }
 
-    /* ================= 3. MULTIPLAYER (ROOM CODE) ================= */
+    /* ================= 3. MULTIPLAYER ONLINE ================= */
     function renderMultiplayer() {
       appRoot.innerHTML = `
         <div class="space-y-4">
           <div class="flex justify-between items-center">
             <h3 class="font-bold text-white text-base">Multi-Device Room</h3>
-            <button onclick="offlinePhase='MODE_SELECT'; render();" class="text-xs text-slate-400 underline">Mode Change</button>
+            <button onclick="offlinePhase='MODE_SELECT'; render();" class="text-xs text-slate-400 underline">Change Mode</button>
           </div>
 
           <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-3">
-            <input id="onlineNameInput" type="text" placeholder="Mee peru..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
-            <button onclick="initHostOnline()" class="w-full py-2.5 rounded-xl bg-rose-600 font-bold text-xs text-white">Create Room (Host)</button>
+            <input id="onlineNameInput" type="text" placeholder="మీ పేరు..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+            <button onclick="initHostOnline()" class="w-full py-2.5 rounded-xl bg-rose-600 font-bold text-xs text-white">రూమ్ క్రియేట్ చేయండి (Host)</button>
           </div>
 
           <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-2">
@@ -557,13 +626,10 @@
     }
 
     function initHostOnline() {
-      const name = document.getElementById('onlineNameInput').value.trim() || 'Host';
       const code = Math.random().toString(36).substring(2, 6).toUpperCase();
       peer = new Peer('mafia_' + code.toLowerCase());
-      peer.on('open', () => {
-        alert('Room Created! Code: ' + code);
-      });
-      peer.on('error', () => alert('Error creating room, please try again.'));
+      peer.on('open', () => alert('రూమ్ క్రియేట్ అయింది! Code: ' + code));
+      peer.on('error', () => alert('Error. Please try again.'));
     }
     function initClientOnline() {
       const code = document.getElementById('onlineCodeInput').value.trim();
@@ -573,9 +639,10 @@
         const conn = peer.connect('mafia_' + code.toLowerCase());
         conn.on('open', () => alert('Connected to Room ' + code));
       });
-      peer.on('error', () => alert('Cannot connect to room.'));
+      peer.on('error', () => alert('Cannot connect. Check code.'));
     }
 
+    // Initialize App
     render();
   </script>
 </body>
