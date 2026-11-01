@@ -1,1406 +1,1238 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="te">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="manifest" href="manifest.json">
-  <title>Mafia Gang - Multiplayer Party Game</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Telugu Custom Mafia - Midnight Edition</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d0e15">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            cinzel: ['Cinzel', 'serif'],
-            sans: ['Plus Jakarta Sans', 'sans-serif'],
-          },
-          colors: {
-            noir: {
-              950: '#06080d',
-              900: '#0b0f19',
-              850: '#111726',
-              800: '#192238',
-              700: '#23304d',
-            },
-            blood: {
-              500: '#ff1e42',
-              600: '#e00b2e',
-              700: '#b80020',
-            },
-            gold: {
-              400: '#facc15',
-              500: '#eab308',
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Ramaraja&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
   <style>
+    :root {
+      --bg-main: #0a0b10;
+      --card-bg: #141724;
+      --accent-red: #ff3366;
+      --accent-gold: #fbbf24;
+      --accent-cyan: #06b6d4;
+    }
     body {
-      background-color: #06080d;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-main);
       color: #f1f5f9;
+      user-select: none;
       -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
     }
-    .crimson-glow {
-      box-shadow: 0 0 25px -4px rgba(255, 30, 66, 0.45);
+    .cinzel { font-family: 'Cinzel', serif; }
+    .telugu-font { font-family: 'Ramaraja', 'Plus Jakarta Sans', sans-serif; }
+    
+    /* 3D Card Flip Animation */
+    .perspective-1000 { perspective: 1000px; }
+    .transform-style-3d { transform-style: preserve-3d; }
+    .backface-hidden { backface-visibility: hidden; }
+    .rotate-y-180 { transform: rotateY(180deg); }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+    /* Atmosphere Effects */
+    .night-vignette {
+      box-shadow: inset 0 0 100px rgba(0,0,0,0.9), inset 0 0 40px rgba(239, 68, 68, 0.2);
     }
-    .cyan-glow {
-      box-shadow: 0 0 25px -4px rgba(34, 211, 238, 0.35);
+    .day-vignette {
+      box-shadow: inset 0 0 80px rgba(251, 191, 36, 0.15);
     }
-    .glass-card {
-      background: rgba(17, 23, 38, 0.85);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    @keyframes pulse-slow {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.03); opacity: 1; }
     }
-    .custom-scroll::-webkit-scrollbar {
-      width: 4px;
-    }
-    .custom-scroll::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 999px;
-    }
-    @keyframes breathing {
-      0%, 100% { transform: scale(1); opacity: 0.6; }
-      50% { transform: scale(1.05); opacity: 0.9; }
-    }
-    .anim-breathe {
-      animation: breathing 4s ease-in-out infinite;
-    }
+    .animate-pulse-slow { animation: pulse-slow 3s infinite ease-in-out; }
   </style>
 </head>
-<body class="font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-blood-600 selection:text-white">
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden">
 
-  <!-- TOP APP BAR -->
-  <header class="w-full max-w-md mx-auto pt-3 px-4 pb-2 flex items-center justify-between z-20">
+  <!-- TOP HEADER -->
+  <header class="p-4 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur sticky top-0 z-40 flex items-center justify-between">
     <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blood-700 to-blood-500 flex items-center justify-center text-sm shadow-lg shadow-blood-700/40">
-        🕵️
-      </div>
+      <span class="text-2xl animate-bounce">🕶️</span>
       <div>
-        <h1 class="font-cinzel font-black tracking-wider text-base text-white leading-tight">MAFIA LIVE</h1>
-        <p class="text-[9px] text-gray-400 font-bold tracking-widest uppercase">Multiplayer Web Room</p>
+        <h1 class="cinzel text-lg font-black tracking-wider text-rose-500">MAFIA TELUGU</h1>
+        <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase">Midnight Heist</p>
       </div>
     </div>
-    
-    <div id="roomTopBadge" class="hidden flex items-center gap-2">
-      <div class="px-2.5 py-1 rounded-lg glass-card border border-gold-500/30 flex items-center gap-1.5 cursor-pointer" onclick="copyRoomCode()">
-        <span class="text-[10px] text-gray-400 font-semibold uppercase">ROOM:</span>
-        <span id="headerRoomCode" class="font-cinzel text-xs font-black text-gold-400 tracking-wider">----</span>
-        <span class="text-xs">📋</span>
-      </div>
+    <div class="flex items-center gap-2">
+      <button id="soundToggle" onclick="toggleMute()" class="w-9 h-9 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center text-sm shadow">🔊</button>
+      <button onclick="openRulesModal()" class="px-3 py-1.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 text-xs font-bold flex items-center gap-1 shadow">
+        <span>📖</span> రూల్స్
+      </button>
     </div>
   </header>
 
-  <!-- MAIN DYNAMIC CONTENT -->
-  <main class="w-full max-w-md mx-auto flex-1 px-4 py-2 flex flex-col justify-center">
+  <!-- MAIN VIEW CONTAINER -->
+  <main id="appRoot" class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col justify-center"></main>
 
-    <!-- SCREEN 1: LANDING (HOST OR JOIN) -->
-    <section id="screenLanding" class="space-y-4">
-      <div class="glass-card rounded-3xl p-6 text-center border-blood-600/30 crimson-glow relative overflow-hidden">
-        <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-blood-600/15 rounded-full blur-3xl"></div>
-        <div class="text-4xl mb-2">🎭</div>
-        <h2 class="font-cinzel text-2xl font-black text-white uppercase tracking-wider">Custom Mafia</h2>
-        <p class="text-xs text-gray-300 mt-1">Real-time room based game. Mee friends andharu vaalla personal phone lo aadochu!</p>
+  <!-- RULES POPUP MODAL -->
+  <div id="rulesModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+        <h3 class="font-bold text-amber-400 text-lg flex items-center gap-2">
+          <span>📜</span> ఆట నియమాలు (Game Rules)
+        </h3>
+        <button onclick="closeRulesModal()" class="text-slate-400 hover:text-white text-xl font-bold w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">✕</button>
       </div>
-
-      <!-- Player Identity Input -->
-      <div class="glass-card rounded-2xl p-4 space-y-2">
-        <label class="text-[11px] font-bold uppercase tracking-wider text-gray-300">Your Name (Mee Peru)</label>
-        <input id="inputMyName" type="text" maxlength="14" placeholder="e.g., Cherry, Bunny, Praneeth"
-          class="w-full bg-noir-900 border border-noir-700 text-sm rounded-xl px-3.5 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-blood-500 transition-all font-medium">
-      </div>
-
-      <!-- Actions Tabs: Join / Host -->
-      <div class="grid grid-cols-2 gap-3">
-        <button onclick="hostNewGame()" class="p-4 rounded-2xl bg-gradient-to-br from-blood-700 to-blood-600 text-white font-black text-left shadow-lg shadow-blood-700/30 active:scale-95 transition-all">
-          <div class="text-xl mb-1">👑</div>
-          <div class="text-xs font-cinzel uppercase tracking-wider">Host Game</div>
-          <div class="text-[10px] text-red-100/70 font-normal mt-0.5">Create room & get 4-letter code</div>
-        </button>
-
-        <button onclick="showJoinModal()" class="p-4 rounded-2xl glass-card border border-white/10 hover:border-cyan-500/50 text-white font-black text-left active:scale-95 transition-all">
-          <div class="text-xl mb-1">🔑</div>
-          <div class="text-xs font-cinzel uppercase tracking-wider text-cyan-400">Join Room</div>
-          <div class="text-[10px] text-gray-400 font-normal mt-0.5">Enter friends' 4-letter code</div>
-        </button>
-      </div>
-
-      <!-- Join Room Input Block (Hidden by default) -->
-      <div id="joinCodeBox" class="hidden glass-card rounded-2xl p-4 space-y-3 border-cyan-500/40">
-        <div class="flex items-center justify-between">
-          <label class="text-[11px] font-bold uppercase tracking-wider text-cyan-400">Enter 4-Letter Room Code</label>
-          <button onclick="hideJoinModal()" class="text-xs text-gray-400 hover:text-white">&times; Cancel</button>
-        </div>
-        <div class="flex gap-2">
-          <input id="inputRoomCode" type="text" maxlength="4" placeholder="TOWN"
-            class="w-full text-center tracking-[0.3em] uppercase font-cinzel text-xl bg-noir-900 border border-noir-700 rounded-xl py-2 text-gold-400 focus:outline-none focus:border-cyan-500">
-          <button onclick="joinGameWithCode()" class="px-5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs uppercase tracking-wider active:scale-95 transition-all">
-            Enter
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- SCREEN 2: LOBBY (WAITING ROOM) -->
-    <section id="screenLobby" class="hidden space-y-4">
-      <!-- Room Code Banner -->
-      <div class="glass-card rounded-2xl p-4 text-center border-gold-500/30 gold-glow relative">
-        <span class="text-[10px] uppercase font-bold tracking-widest text-gold-400">Mee Room Code</span>
-        <div class="flex items-center justify-center gap-2 mt-1">
-          <h2 id="lobbyRoomCode" class="font-cinzel text-3xl font-black text-white tracking-[0.25em]">----</h2>
-          <button onclick="copyRoomCode()" class="p-2 rounded-lg bg-noir-800 text-gold-400 text-xs hover:bg-noir-700 active:scale-90" title="Copy Code">
-            📋 Copy
-          </button>
-        </div>
-        <p class="text-[11px] text-gray-400 mt-1">Share this code with your friends to join from their phone!</p>
-      </div>
-
-      <!-- Players Roster -->
-      <div class="glass-card rounded-2xl p-4 space-y-2.5">
-        <div class="flex items-center justify-between">
-          <label class="text-xs font-bold uppercase tracking-wider text-gray-300">
-            Joined Gang (<span id="lobbyPlayerCount">0</span>/15)
-          </label>
-          <span id="hostStatusBadge" class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-noir-800 text-gray-400 border border-white/5">
-            Member
-          </span>
+      <div class="p-5 overflow-y-auto space-y-4 text-sm text-slate-300 leading-relaxed telugu-font text-base">
+        <div class="p-3 rounded-2xl bg-rose-950/30 border border-rose-800/40">
+          <p class="font-bold text-rose-400 mb-1">🎯 లక్ష్యం (Main Goal):</p>
+          <p>గ్రామ ప్రజలు (Villagers) తమలో దాక్కున్న మాఫియాని కనిపెట్టి Day Voting లో ఎలిమినేట్ చేయాలి. మాఫియా తమ గుర్తింపు బయటపడకుండా రాత్రి వేళ ఒక్కొక్కరిని చంపుకుంటూ రాజ్యాన్ని కైవసం చేసుకోవాలి.</p>
         </div>
 
-        <div id="lobbyPlayersList" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto custom-scroll p-1">
-          <!-- Populated by real-time sync -->
-        </div>
-      </div>
-
-      <!-- Host Role Customizer (Visible only to Host) -->
-      <div id="hostRoleControls" class="glass-card rounded-2xl p-4 space-y-3 border-blood-600/30">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-200">Role Allocation</h3>
-            <p id="hostBalanceHelper" class="text-[10px] text-gray-400 mt-0.5">Set role distribution</p>
-          </div>
-          <button onclick="autoBalanceHostRoles()" class="text-[10px] bg-noir-800 text-cyan-400 border border-cyan-500/30 px-2 py-1 rounded font-semibold">
-            Auto ⚖️
-          </button>
-        </div>
-
-        <div id="lobbyRolesList" class="space-y-1.5">
-          <!-- Dynamic Role counters -->
-        </div>
-
-        <!-- Summary & Balance -->
-        <div class="flex items-center justify-between text-xs pt-1 border-t border-white/5 text-gray-400">
-          <span>Roles assigned: <strong id="lobbyAssignedSum" class="text-white">0</strong> / <span id="lobbyExpectedSum">0</span></span>
-          <span id="lobbyBalanceStatus" class="font-bold text-red-400">Need Balance</span>
-        </div>
-
-        <button id="hostStartGameBtn" onclick="hostInitiateGame()" disabled
-          class="w-full mt-2 py-3 rounded-xl bg-blood-600 hover:bg-blood-500 disabled:bg-noir-800 disabled:text-gray-600 text-white font-black uppercase tracking-wider text-xs shadow-lg shadow-blood-700/30 active:scale-95 transition-all">
-          Start Secret Game 🎭
-        </button>
-      </div>
-
-      <!-- Non-host Waiting Banner -->
-      <div id="guestWaitingBanner" class="hidden glass-card rounded-2xl p-5 text-center border-white/10 space-y-2">
-        <div class="text-2xl anim-breathe">⏳</div>
-        <p class="text-xs font-semibold text-gray-300">Host is selecting secret roles and waiting for all friends to join...</p>
-        <p class="text-[10px] text-gray-500">Phone screen close cheyyakandi!</p>
-      </div>
-    </section>
-
-    <!-- SCREEN 3: PRIVATE ROLE REVEAL ON INDIVIDUAL PHONE -->
-    <section id="screenReveal" class="hidden flex flex-col justify-center items-center text-center space-y-4">
-      <div class="w-full glass-card rounded-3xl p-6 border-blood-600/40 relative overflow-hidden">
-        <div class="text-[10px] font-bold uppercase tracking-widest text-blood-500 mb-1">Confidential File 🤫</div>
-        <h2 id="revealPlayerGreeting" class="font-cinzel text-xl font-bold text-white mb-3">Hello, Friend</h2>
-
-        <!-- Hold to reveal card -->
-        <div id="revealFlapCard" class="w-full aspect-[4/3] max-h-60 rounded-2xl bg-gradient-to-b from-noir-900 to-noir-950 border-2 border-dashed border-noir-700 flex flex-col items-center justify-center p-4 cursor-pointer select-none relative transition-all active:scale-[0.98]">
-          <div id="cardLockedView" class="space-y-1.5">
-            <div class="text-4xl anim-breathe">🔒</div>
-            <p class="font-black text-sm text-gray-200 uppercase tracking-wider font-cinzel">Press & Hold</p>
-            <p class="text-[10px] text-gray-400">Pakkana vallu chudakunda chusukondi</p>
-          </div>
-
-          <div id="cardUnlockedView" class="hidden flex flex-col items-center justify-center space-y-1.5 text-center">
-            <span id="myRoleIcon" class="text-4xl">🔪</span>
-            <h3 id="myRoleTitle" class="text-xl font-black font-cinzel uppercase text-gold-400">MAFIA</h3>
-            <p id="myRoleTelugu" class="text-[10px] font-bold text-blood-400 uppercase tracking-wider">Dongalu / Killer</p>
-            <p id="myRoleDesc" class="text-xs text-gray-300 leading-snug max-w-xs mt-1">Role explanation</p>
-          </div>
-        </div>
-
-        <p class="text-[10px] text-gray-500 mt-2">Release touch to instantly hide your role</p>
-
-        <!-- Ready Button -->
-        <button id="btnImReady" onclick="confirmMyRoleReady()" class="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-blood-700 to-blood-600 hover:from-blood-600 text-white font-black text-xs uppercase tracking-wider active:scale-95 transition-all shadow-lg">
-          I've Memorized My Role! 🛡️
-        </button>
-      </div>
-    </section>
-
-    <!-- SCREEN 4: SYNCHRONIZED NIGHT PHASE -->
-    <section id="screenNight" class="hidden space-y-4">
-      <div class="glass-card rounded-2xl p-4 text-center border-indigo-500/30 relative">
-        <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 mb-1">
-          🌙 Raathri Velayenu (Night Phase)
-        </span>
-        <h2 id="nightHeaderTitle" class="font-cinzel text-xl font-black text-white">Under The Moonlight</h2>
-        <p id="nightSubHeader" class="text-xs text-gray-400 mt-0.5">Town is asleep... Execute your orders</p>
-      </div>
-
-      <!-- ROLE SPECIFIC ACTION CONTAINER -->
-      <div id="nightActionContainer" class="glass-card rounded-2xl p-4 space-y-3">
+        <h4 class="font-bold text-white text-md border-b border-slate-800 pb-1">👑 పాత్రలు & వాటి శక్తులు (Roles & Powers)</h4>
         
-        <!-- Case A: MAFIA ACTION -->
-        <div id="mafiaNightPanel" class="hidden space-y-3">
-          <div class="flex items-center justify-between text-xs">
-            <span class="font-bold text-blood-500 uppercase tracking-wide">🔪 Choose assassination target:</span>
-            <span class="text-[10px] text-gray-400">Mafia Syndicate</span>
-          </div>
-          <div id="mafiaTargetsGrid" class="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto custom-scroll p-1">
-            <!-- Targets -->
-          </div>
-        </div>
-
-        <!-- Case B: DETECTIVE ACTION -->
-        <div id="detectiveNightPanel" class="hidden space-y-3">
-          <div class="flex items-center justify-between text-xs">
-            <span class="font-bold text-cyan-400 uppercase tracking-wide">🔍 Interrogate Suspect:</span>
-            <span class="text-[10px] text-gray-400">CID Intelligence</span>
-          </div>
-          <div id="detectiveTargetsGrid" class="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto custom-scroll p-1">
-            <!-- Targets -->
+        <div class="space-y-3">
+          <div class="flex gap-3 items-start">
+            <span class="text-2xl p-2 bg-slate-800 rounded-xl">🔪</span>
+            <div>
+              <p class="font-bold text-rose-400">Mafia (హంతకుడు):</p>
+              <p class="text-xs text-slate-400">ప్రతి రాత్రి ఒకరిని టార్గెట్ చేసి చంపుతారు. డే టైంలో అందరితో కలిసి అమాయకుడిలా నటించాలి.</p>
+            </div>
           </div>
 
-          <!-- Secret Intel Result Card -->
-          <div id="detectiveIntelModal" class="hidden p-3 rounded-xl bg-noir-900 border border-gold-500/50 text-center space-y-1">
-            <div class="text-[10px] font-bold uppercase text-gold-400 tracking-wider">Confidential Intel</div>
-            <div id="detectiveIntelText" class="text-sm font-black text-white">---</div>
+          <div class="flex gap-3 items-start">
+            <span class="text-2xl p-2 bg-slate-800 rounded-xl">🕵️</span>
+            <div>
+              <p class="font-bold text-cyan-400">Detective (సి.ఐ.డి గూఢచారి):</p>
+              <p class="text-xs text-slate-400">రాత్రి పూట ఒకరిని చెక్ చేయవచ్చు (వాళ్ళు మాఫియానా కాదా అని వెంటనే తెలుస్తుంది). డే టైంలో తెలివిగా హింట్స్ ఇవ్వాలి.</p>
+            </div>
           </div>
-        </div>
 
-        <!-- Case C: DOCTOR ACTION -->
-        <div id="doctorNightPanel" class="hidden space-y-3">
-          <div class="flex items-center justify-between text-xs">
-            <span class="font-bold text-emerald-400 uppercase tracking-wide">💉 Choose 1 player to protect:</span>
-            <span class="text-[10px] text-gray-400">Immunity Shield</span>
+          <div class="flex gap-3 items-start">
+            <span class="text-2xl p-2 bg-slate-800 rounded-xl">💉</span>
+            <div>
+              <p class="font-bold text-emerald-400">Doctor (ప్రాణ దాత):</p>
+              <p class="text-xs text-slate-400">ప్రతి రాత్రి ఒకరికి రక్షక కవచం (Protect) ఇస్తారు. మాఫియా వాళ్ళనే టార్గెట్ చేస్తే ఆ వ్యక్తి బ్రతుకుతాడు.</p>
+            </div>
           </div>
-          <div id="doctorTargetsGrid" class="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto custom-scroll p-1">
-            <!-- Targets -->
-          </div>
-        </div>
 
-        <!-- Case D: VILLAGER / SLEEPING -->
-        <div id="sleepingNightPanel" class="hidden text-center py-8 space-y-3">
-          <div class="text-4xl anim-breathe">🤫</div>
-          <h3 class="font-cinzel text-lg font-bold text-gray-200">You are fast asleep in your home...</h3>
-          <p class="text-xs text-gray-400 max-w-xs mx-auto">Listen closely to the cold night wind. Do not reveal any motion or sound to your friends!</p>
-          <div class="inline-block px-3 py-1 rounded-full bg-noir-900 border border-white/10 text-[10px] text-indigo-300 font-mono">
-            Waiting for morning bell...
+          <div class="flex gap-3 items-start">
+            <span class="text-2xl p-2 bg-slate-800 rounded-xl">🃏</span>
+            <div>
+              <p class="font-bold text-purple-400">Jester (పిచ్చి రోల్):</p>
+              <p class="text-xs text-slate-400">ఈ ప్లేయర్ టార్గెట్ ఒక్కటే—డే ఓటింగ్‌లో తనని తానే ఎలిమినేట్ చేయించుకోవాలి! పబ్లిక్ ఇతన్ని మాఫియా అనుకుని ఓటేస్తే, జెస్టర్ డైరెక్ట్ విన్నర్!</p>
+            </div>
+          </div>
+
+          <div class="flex gap-3 items-start">
+            <span class="text-2xl p-2 bg-slate-800 rounded-xl">🌾</span>
+            <div>
+              <p class="font-bold text-amber-400">Villager (సాధారణ పౌరుడు):</p>
+              <p class="text-xs text-slate-400">శక్తులు ఉండవు. కానీ మాటలు, కళ్ళ ఎక్స్‌ప్రెషన్స్ పసిగట్టి నిజమైన మాఫియాను కనిపెట్టి ఓటు వేయాలి.</p>
+            </div>
           </div>
         </div>
 
-      </div>
-
-      <!-- Action Confirmation Indicator -->
-      <button id="btnSubmitNightAction" onclick="submitNightTarget()" disabled
-        class="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-700 to-indigo-600 disabled:from-noir-800 disabled:to-noir-800 disabled:text-gray-600 text-white font-black uppercase tracking-wider text-xs shadow-lg transition-all active:scale-95">
-        Lock Night Action 🔒
-      </button>
-
-      <!-- Host Force Morning Button (If night actions lag) -->
-      <button id="hostAdvanceNightBtn" onclick="hostResolveNightPhase()" class="hidden w-full py-2 rounded-xl bg-noir-800 hover:bg-noir-700 text-gold-400 border border-gold-500/20 text-xs font-bold">
-        Host Control: Ring Sunrise Bell ☀️
-      </button>
-    </section>
-
-    <!-- SCREEN 5: SUNRISE & DAY DISCUSSION -->
-    <section id="screenDay" class="hidden space-y-4">
-      <!-- Morning Headline -->
-      <div class="glass-card rounded-2xl p-5 text-center border-gold-500/40 gold-glow relative">
-        <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-gold-500/20 text-gold-400 border border-gold-500/30 mb-2">
-          ☀️ Udayam Ayyindi (Day Phase)
-        </span>
-        <h2 id="dayHeadline" class="font-cinzel text-xl font-black text-white">Morning Gazette</h2>
-        <div id="morningCasualtyCard" class="mt-2.5 p-3 rounded-xl bg-noir-950/80 border border-white/5 text-xs text-gray-300">
-          News is loading...
+        <div class="p-3 bg-slate-800/60 rounded-xl text-xs space-y-1">
+          <p class="font-bold text-slate-200">☀️ పగలు (Day Phase):</p>
+          <p>చర్చించుకోవడానికి 60 సెకన్ల టైమర్ ఉంటుంది. చివర్లో అందరూ ఓటు వేస్తారు. అత్యధిక ఓట్లు వచ్చిన వ్యక్తి గేమ్ నుండి ఔట్!</p>
         </div>
       </div>
-
-      <!-- Discussion Timer & Status -->
-      <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
-        <div>
-          <span class="text-[10px] uppercase font-bold tracking-wider text-gray-400">Discussion Timer</span>
-          <div id="dayTimerDisplay" class="font-cinzel text-2xl font-black text-gold-400">02:00</div>
-        </div>
-        <div id="hostTimerControls" class="hidden flex gap-2">
-          <button onclick="hostAddTimerSeconds(30)" class="px-2.5 py-1.5 bg-noir-800 text-gray-300 rounded-lg text-xs font-bold border border-white/10 active:scale-90">
-            +30s
-          </button>
-        </div>
+      <div class="p-4 bg-slate-950 border-t border-slate-800">
+        <button onclick="closeRulesModal()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-white text-sm">అర్థమైంది! (Got It)</button>
       </div>
-
-      <!-- LIVE VOTING CHAMBER -->
-      <div class="glass-card rounded-2xl p-4 space-y-3">
-        <div class="flex items-center justify-between">
-          <label class="text-xs font-bold uppercase tracking-wider text-gray-300">Town Court: Cast Your Vote</label>
-          <span class="text-[10px] text-blood-400 font-bold">1 Person Only</span>
-        </div>
-
-        <div id="votingGrid" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto custom-scroll p-1">
-          <!-- Realtime Voting targets -->
-        </div>
-
-        <button onclick="castVote('skip')" class="w-full py-2.5 rounded-xl border border-dashed border-gray-600 text-gray-400 font-semibold text-xs hover:border-gray-400 active:scale-95">
-          🤷 Skip Vote (No Execution)
-        </button>
-      </div>
-
-      <!-- Host Finalize Execution Button -->
-      <div id="hostVotingControls" class="hidden space-y-2">
-        <button onclick="hostTallyAndExecute()" class="w-full py-3.5 rounded-xl bg-blood-600 hover:bg-blood-500 text-white font-black uppercase tracking-wider text-xs shadow-lg active:scale-95 transition-all">
-          Host: Tally Votes & Execute ⚖️
-        </button>
-      </div>
-    </section>
-
-    <!-- SCREEN 6: GAME OVER / VICTORY -->
-    <section id="screenGameOver" class="hidden space-y-4 text-center py-4">
-      <div class="glass-card rounded-3xl p-6 border-blood-600/40 relative overflow-hidden">
-        <div id="endGameIcon" class="text-6xl mb-2">🏆</div>
-        <h2 id="endGameTitle" class="font-cinzel text-2xl font-black text-white uppercase">Game Over</h2>
-        <p id="endGameSubtitle" class="text-xs text-gray-300 mt-1">Victory status</p>
-
-        <!-- Final Roles List -->
-        <div class="mt-4 text-left">
-          <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Full Gang Secret Identities:</div>
-          <div id="endGameRoster" class="space-y-1.5 max-h-48 overflow-y-auto custom-scroll pr-1">
-            <!-- Filled dynamically -->
-          </div>
-        </div>
-
-        <div id="hostRestartControls" class="hidden mt-5">
-          <button onclick="hostRestartLobby()" class="w-full py-3.5 rounded-xl bg-blood-600 hover:bg-blood-500 text-white font-black uppercase text-xs tracking-wider shadow-lg active:scale-95 transition-all">
-            Play Again (Same Room) 🔄
-          </button>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- TOAST NOTIFICATION -->
-  <div id="toastMessage" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-noir-850 border border-blood-600/40 text-white px-4 py-2 rounded-xl shadow-2xl text-xs font-semibold tracking-wide pointer-events-none transition-all duration-300 opacity-0 translate-y-3 z-50">
-    Notification
+    </div>
   </div>
 
-  <footer class="w-full text-center py-2 text-[9px] text-gray-600">
-    Multiplayer Mafia • Connected via Real-Time Cloud
-  </footer>
+  <script>
+    /* =====================================================================
+       AUDIO ENGINE (Web Audio API - No External Assets Needed)
+    ===================================================================== */
+    let audioCtx = null;
+    let isMuted = false;
 
-  <!-- FIREBASE SCRIPTS VIA ESM -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // --- CONFIG & GLOBAL INITIALIZATION ---
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'mafia-party-default';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-      apiKey: "demo-api-key",
-      authDomain: "demo.firebaseapp.com",
-      projectId: "demo-project",
-      storageBucket: "demo.appspot.com",
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // --- AUDIO EFFECTS ENGINE ---
-    const AudioFX = {
-      ctx: null,
-      init() {
-        if (!this.ctx) {
-          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-          if (AudioContextClass) this.ctx = new AudioContextClass();
-        }
-      },
-      beep(freq, type = 'sine', duration = 0.15, vol = 0.08) {
-        try {
-          this.init();
-          if (!this.ctx) return;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = type;
-          osc.frequency.value = freq;
-          gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start();
-          osc.stop(this.ctx.currentTime + duration);
-        } catch(e) {}
-      },
-      nightGong() {
-        this.beep(120, 'sine', 1.2, 0.18);
-      },
-      morningSunrise() {
-        this.beep(523.25, 'triangle', 0.2, 0.1);
-        setTimeout(() => this.beep(659.25, 'triangle', 0.3, 0.1), 180);
-      },
-      deathBuzzer() {
-        this.beep(140, 'sawtooth', 0.5, 0.2);
-      },
-      tick() {
-        this.beep(880, 'square', 0.04, 0.03);
+    function getAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
-    };
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
 
-    // --- GAME ROLES DEFINITIONS ---
-    const ROLES = {
+    function toggleMute() {
+      isMuted = !isMuted;
+      document.getElementById('soundToggle').innerText = isMuted ? '🔇' : '🔊';
+    }
+
+    function playSound(type) {
+      if (isMuted) return;
+      try {
+        const ctx = getAudioCtx();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'tick') {
+          osc.frequency.setValueAtTime(800, now);
+          gain.gain.setValueAtTime(0.05, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } else if (type === 'night') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(140, now);
+          osc.frequency.exponentialRampToValueAtTime(60, now + 1.2);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+          osc.start(now);
+          osc.stop(now + 1.2);
+        } else if (type === 'kill') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.exponentialRampToValueAtTime(40, now + 0.6);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+          osc.start(now);
+          osc.stop(now + 0.6);
+        } else if (type === 'morning') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(329.63, now);
+          osc.frequency.setValueAtTime(440, now + 0.2);
+          osc.frequency.setValueAtTime(587.33, now + 0.4);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
+          osc.start(now);
+          osc.stop(now + 1.0);
+        } else if (type === 'victory') {
+          [0, 0.15, 0.3, 0.45].forEach((delay, i) => {
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g);
+            g.connect(ctx.destination);
+            o.frequency.setValueAtTime([261.6, 329.6, 392.0, 523.2][i], now + delay);
+            g.gain.setValueAtTime(0.2, now + delay);
+            g.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.3);
+            o.start(now + delay);
+            o.stop(now + delay + 0.35);
+          });
+        }
+      } catch (e) {
+        console.warn('Audio play error:', e);
+      }
+    }
+
+    /* =====================================================================
+       DEFAULT AVATARS & ROLES DEFINITIONS
+    ===================================================================== */
+    const PRESET_AVATARS = [
+      { id: 'av1', emoji: '🕶️', label: 'గ్యాంగ్‌స్టర్' },
+      { id: 'av2', emoji: '🤠', label: 'రౌడీ' },
+      { id: 'av3', emoji: '🕵️‍♂️', label: 'సి.ఐ.డి' },
+      { id: 'av4', emoji: '🧑‍⚕️', label: 'డాక్టర్' },
+      { id: 'av5', emoji: '🤡', label: 'జెస్టర్' },
+      { id: 'av6', emoji: '🧔', label: 'గ్రామస్థుడు' },
+      { id: 'av7', emoji: '🥷', label: 'నింజా' },
+      { id: 'av8', emoji: '👑', label: 'లీడర్' }
+    ];
+
+    const ROLE_INFO = {
       mafia: {
-        id: 'mafia',
-        name: 'The Mafia',
-        telugu: 'Dongalu / Killer',
-        team: 'mafia',
+        name: 'మాఫియా (The Mafia)',
+        badge: 'హంతకుడు',
+        team: 'Mafia',
+        color: 'from-rose-600 to-red-900',
+        textColor: 'text-rose-400',
+        borderColor: 'border-rose-500',
         icon: '🔪',
-        desc: 'Raathri evarino okarini secret ga assassinate cheyyandi. Morning evariki doubt raakunda cover cheyyandi!'
+        desc: 'రాత్రి వేళ గ్రామస్థుడిని టార్గెట్ చేసి మట్టుబెట్టండి. పగలు పక్కా అమాయకుడిలా కవర్ చేసుకోండి!',
+        win: 'ప్రజల సంఖ్య మాఫియాతో సమానం అయితే విజయం మీదే!'
       },
       detective: {
-        id: 'detective',
-        name: 'CID Detective',
-        telugu: 'Gudachari',
-        team: 'town',
-        icon: '🔍',
-        desc: 'Prathi raathri okari identity check chesi vaallu Mafia no kaadho live intel thelusukondi.'
+        name: 'సి.ఐ.డి (The Detective)',
+        badge: 'గూఢచారి',
+        team: 'Village',
+        color: 'from-cyan-600 to-blue-900',
+        textColor: 'text-cyan-400',
+        borderColor: 'border-cyan-500',
+        icon: '🕵️',
+        desc: 'రాత్రి ఒక అనుమానితుడిని ఎంచుకుని రహస్యంగా వారి ఐడెంటిటీని కనిపెట్టండి.',
+        win: 'మాఫియా మొత్తాన్ని అంతమొందిస్తే ఊరికి విజయం!'
       },
       doctor: {
-        id: 'doctor',
-        name: 'The Doctor',
-        telugu: 'Pranadatha',
-        team: 'town',
+        name: 'డాక్టర్ (The Doctor)',
+        badge: 'ప్రాణదాత',
+        team: 'Village',
+        color: 'from-emerald-600 to-teal-900',
+        textColor: 'text-emerald-400',
+        borderColor: 'border-emerald-500',
         icon: '💉',
-        desc: 'Raathri okarini target nunchi protect cheyyandi. Mafia vaallani attack chesthe vaallu brathukutharu!'
+        desc: 'రాత్రి ఒకరికి రక్షణ కవచం ఇవ్వండి. మాఫియా దాడి నుండి వారిని కాపాడండి.',
+        win: 'ఊరి ప్రజలను కాపాడి మాఫియాను తుదముట్టించాలి!'
       },
       jester: {
-        id: 'jester',
-        name: 'Jester / Psycho',
-        telugu: 'Pichi Roll',
-        team: 'neutral',
+        name: 'పిచ్చి రోల్ (The Jester)',
+        badge: 'ట్రిక్‌స్టర్',
+        team: 'Neutral',
+        color: 'from-purple-600 to-fuchsia-950',
+        textColor: 'text-purple-400',
+        borderColor: 'border-purple-500',
         icon: '🃏',
-        desc: 'Mee goal: Day voting lo mimmalni Mafia anukuni andharu execute cheyyali. Vote out aiythe MEERE WINNER!'
+        desc: 'మీరు కావాలనే దొంగలా ప్రవర్తించి పగటి పూట ప్రజల చేత ఓట్ వేయించుకుని ఎలిమినేట్ అవ్వాలి!',
+        win: 'ప్రజలు మీకే ఓటేసి చంపితే మీరొక్కరే విన్నర్!'
       },
       villager: {
-        id: 'villager',
-        name: 'Citizen',
-        telugu: 'Prajalu / Villager',
-        team: 'town',
-        icon: '👤',
-        desc: 'Discussions lo active ga questions adigi, Mafia evaro kanukuni Day voting lo eliminate cheyyandi!'
+        name: 'గ్రామస్థుడు (Villager)',
+        badge: 'పౌరుడు',
+        team: 'Village',
+        color: 'from-amber-600 to-stone-900',
+        textColor: 'text-amber-400',
+        borderColor: 'border-amber-500',
+        icon: '🌾',
+        desc: 'చర్చల్లో పాల్గొని, నిజం అబద్ధం కనిపెట్టి సరైన మాఫియా మీద ఓటు వేయండి.',
+        win: 'గ్రామం లోని మాఫియా అంతా అంతమొందితే విజయం మీదే!'
       }
     };
 
-    // --- STATE MACHINE ---
-    let currentUser = null;
-    let myPlayerId = null;
-    let currentRoomCode = null;
-    let roomUnsubscribe = null;
-    let currentRoomData = null;
-    let selectedNightTarget = null;
-    let selectedDayVote = null;
-
-    // Toast
-    window.showToast = function(msg) {
-      const el = document.getElementById('toastMessage');
-      el.innerText = msg;
-      el.classList.remove('opacity-0', 'translate-y-3');
-      el.classList.add('opacity-100', 'translate-y-0');
-      setTimeout(() => {
-        el.classList.remove('opacity-100', 'translate-y-0');
-        el.classList.add('opacity-0', 'translate-y-3');
-      }, 2500);
+    /* =====================================================================
+       APP STATE
+    ===================================================================== */
+    let state = {
+      view: 'SETUP', // SETUP, LOBBY, REVEAL, NIGHT_TRANSITION, NIGHT_TURN, DAY_GAZETTE, DAY_DISCUSS, DAY_VOTE, WINNER
+      players: [
+        { id: 'p1', name: 'రాజు', avatar: '🕶️', photo: null, isAlive: true, role: null },
+        { id: 'p2', name: 'అజయ్', avatar: '🤠', photo: null, isAlive: true, role: null },
+        { id: 'p3', name: 'కిరణ్', avatar: '🧔', photo: null, isAlive: true, role: null },
+        { id: 'p4', name: 'సురేష్', avatar: '🧑‍⚕️', photo: null, isAlive: true, role: null },
+        { id: 'p5', name: 'వరుణ్', avatar: '🤡', photo: null, isAlive: true, role: null }
+      ],
+      roleCounts: {
+        mafia: 1,
+        detective: 1,
+        doctor: 1,
+        jester: 1,
+        villager: 1
+      },
+      revealIndex: 0,
+      isCardRevealed: false,
+      // Night actions
+      nightPlayerIndex: 0,
+      currentNightAction: {
+        mafiaTarget: null,
+        doctorTarget: null,
+        detectiveCheck: null,
+        detectiveResult: null
+      },
+      // Day Gazette
+      lastNightResult: {
+        killedId: null,
+        saved: false
+      },
+      timerSeconds: 60,
+      timerInterval: null,
+      votes: {}, // voterId -> targetId
+      winnerTeam: null, // 'Town', 'Mafia', 'Jester'
+      winnerMsg: ''
     };
 
-    // Clipboard copy helper using document.execCommand
-    window.copyRoomCode = function() {
-      if (!currentRoomCode) return;
-      const tempInput = document.createElement('input');
-      tempInput.value = currentRoomCode;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      try {
-        document.execCommand('copy');
-        showToast(`Room Code ${currentRoomCode} copied!`);
-        AudioFX.beep(600, 'sine', 0.08);
-      } catch (err) {
-        showToast(`Code is: ${currentRoomCode}`);
-      }
-      document.body.removeChild(tempInput);
-    };
+    /* =====================================================================
+       DOM RENDER DISPATCHER
+    ===================================================================== */
+    const appRoot = document.getElementById('appRoot');
 
-    // Authentication Guard
-    async function ensureAuth() {
-      if (currentUser) return currentUser;
-      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-        const cred = await signInWithCustomToken(auth, __initial_auth_token);
-        currentUser = cred.user;
-      } else {
-        const cred = await signInAnonymously(auth);
-        currentUser = cred.user;
+    function render() {
+      if (state.timerInterval && state.view !== 'DAY_DISCUSS') {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
       }
-      myPlayerId = currentUser.uid;
-      return currentUser;
+      
+      switch (state.view) {
+        case 'SETUP': renderSetup(); break;
+        case 'ROLE_CONFIG': renderRoleConfig(); break;
+        case 'REVEAL': renderReveal(); break;
+        case 'NIGHT_TRANSITION': renderNightTransition(); break;
+        case 'NIGHT_TURN': renderNightTurn(); break;
+        case 'DAY_GAZETTE': renderDayGazette(); break;
+        case 'DAY_DISCUSS': renderDayDiscuss(); break;
+        case 'DAY_VOTE': renderDayVote(); break;
+        case 'WINNER': renderWinner(); break;
+      }
     }
 
-    // --- SCREEN NAVIGATION ---
-    function switchScreen(screenId) {
-      const list = ['screenLanding', 'screenLobby', 'screenReveal', 'screenNight', 'screenDay', 'screenGameOver'];
-      list.forEach(id => document.getElementById(id).classList.add('hidden'));
-      document.getElementById(screenId).classList.remove('hidden');
+    /* =====================================================================
+       VIEW: 1. SETUP (PLAYERS & CUSTOM PHOTOS)
+    ===================================================================== */
+    let tempAvatar = '🕶️';
+    let tempPhotoData = null;
 
-      const badge = document.getElementById('roomTopBadge');
-      if (screenId === 'screenLanding') {
-        badge.classList.add('hidden');
-      } else {
-        badge.classList.remove('hidden');
-        document.getElementById('headerRoomCode').innerText = currentRoomCode || '----';
-      }
+    function renderSetup() {
+      appRoot.innerHTML = `
+        <div class="space-y-4">
+          <div class="text-center">
+            <h2 class="text-2xl font-black cinzel text-white">గ్యాంగ్ మెంబర్స్</h2>
+            <p class="text-xs text-slate-400">ఫ్రెండ్స్ పేర్లు & ఫోటోస్ సెట్ చేయండి (కనీసం 4గురు)</p>
+          </div>
+
+          <!-- Add Player Card -->
+          <div class="p-4 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-3">
+            <div class="flex items-center gap-3">
+              <!-- Avatar or Photo Circle -->
+              <div class="relative group cursor-pointer" onclick="document.getElementById('photoInput').click()">
+                <div id="avatarPreview" class="w-14 h-14 rounded-2xl bg-slate-800 border-2 border-rose-500/50 flex items-center justify-center text-2xl overflow-hidden shadow">
+                  ${tempPhotoData ? `<img src="${tempPhotoData}" class="w-full h-full object-cover">` : tempAvatar}
+                </div>
+                <div class="absolute -bottom-1 -right-1 bg-rose-500 rounded-full w-5 h-5 flex items-center justify-center text-[10px] text-white">📷</div>
+              </div>
+              <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+
+              <div class="flex-1">
+                <input id="playerNameInput" type="text" placeholder="ఫ్రెండ్ పేరు రాయండి..." 
+                  class="w-full bg-slate-950 border border-slate-700/80 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-rose-500"
+                  onkeydown="if(event.key==='Enter') addPlayer()">
+              </div>
+            </div>
+
+            <!-- Avatar selector quick pills -->
+            <div class="flex items-center gap-1.5 overflow-x-auto py-1">
+              ${PRESET_AVATARS.map(av => `
+                <button onclick="selectPresetAvatar('${av.emoji}')" class="px-2.5 py-1 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-sm border border-slate-700">
+                  ${av.emoji}
+                </button>
+              `).join('')}
+            </div>
+
+            <button onclick="addPlayer()" class="w-full py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-500 font-bold text-sm text-white shadow-lg shadow-rose-900/40 flex items-center justify-center gap-2">
+              <span>➕</span> మెంబర్‌ని యాడ్ చేయండి
+            </button>
+          </div>
+
+          <!-- Roster list -->
+          <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+            ${state.players.map((p, idx) => `
+              <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-900/60 border border-slate-800/70">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-lg overflow-hidden border border-slate-700">
+                    ${p.photo ? `<img src="${p.photo}" class="w-full h-full object-cover">` : p.avatar}
+                  </div>
+                  <div>
+                    <p class="font-bold text-white text-sm">${p.name}</p>
+                    <p class="text-[10px] text-slate-400">Player #${idx + 1}</p>
+                  </div>
+                </div>
+                <button onclick="removePlayer('${p.id}')" class="text-rose-400 hover:text-rose-300 text-sm p-1">🗑️</button>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Next Button -->
+          <button onclick="goToRoleConfig()" ${state.players.length < 4 ? 'disabled' : ''} 
+            class="w-full py-3.5 rounded-2xl font-black text-sm tracking-wider uppercase transition-all shadow-xl ${
+              state.players.length < 4 
+              ? 'bg-slate-800 text-slate-500 cursor-not-allowed' 
+              : 'bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 text-white shadow-rose-900/50'
+            }">
+            రోల్స్ సెట్ చేయండి (${state.players.length} Players) ➔
+          </button>
+        </div>
+      `;
     }
 
-    // --- LANDING & ROOM CREATION ---
-    window.showJoinModal = function() {
-      document.getElementById('joinCodeBox').classList.remove('hidden');
-    };
-    window.hideJoinModal = function() {
-      document.getElementById('joinCodeBox').classList.add('hidden');
-    };
-
-    function generateCode() {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let res = '';
-      for (let i = 0; i < 4; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
-      return res;
+    function selectPresetAvatar(emoji) {
+      tempAvatar = emoji;
+      tempPhotoData = null;
+      document.getElementById('avatarPreview').innerHTML = emoji;
     }
 
-    window.hostNewGame = async function() {
-      const name = document.getElementById('inputMyName').value.trim();
-      if (!name) {
-        showToast('Please enter your name first!');
-        return;
-      }
-      await ensureAuth();
-      const code = generateCode();
-      currentRoomCode = code;
-
-      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'mafia_rooms', code);
-      const initialRoom = {
-        code: code,
-        hostId: myPlayerId,
-        phase: 'lobby', // lobby | reveal | night | day | gameover
-        round: 1,
-        players: [{
-          id: myPlayerId,
-          name: name,
-          isHost: true,
-          role: null,
-          isAlive: true,
-          isReady: false,
-          nightAction: null,
-          vote: null
-        }],
-        roleConfig: { mafia: 1, detective: 1, doctor: 1, jester: 0, villager: 1 },
-        nightPicks: { mafiaTarget: null, doctorTarget: null },
-        nightCasualty: null,
-        timerSeconds: 120,
-        createdAt: Date.now()
+    function handlePhotoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        // Compress photo via canvas
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const maxDim = 160;
+          let w = img.width, h = img.height;
+          if (w > h) { h = (h * maxDim) / w; w = maxDim; }
+          else { w = (w * maxDim) / h; h = maxDim; }
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          tempPhotoData = canvas.toDataURL('image/jpeg', 0.8);
+          document.getElementById('avatarPreview').innerHTML = `<img src="${tempPhotoData}" class="w-full h-full object-cover">`;
+        };
+        img.src = evt.target.result;
       };
-
-      try {
-        await setDoc(roomRef, initialRoom);
-        listenToRoom(code);
-        AudioFX.morningSunrise();
-      } catch (e) {
-        console.error(e);
-        showToast('Failed to create room. Please try again.');
-      }
-    };
-
-    window.joinGameWithCode = async function() {
-      const name = document.getElementById('inputMyName').value.trim();
-      const code = document.getElementById('inputRoomCode').value.trim().toUpperCase();
-
-      if (!name) {
-        showToast('Please enter your name!');
-        return;
-      }
-      if (code.length !== 4) {
-        showToast('Enter valid 4-character code!');
-        return;
-      }
-
-      await ensureAuth();
-      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'mafia_rooms', code);
-      try {
-        const snap = await getDoc(roomRef);
-        if (!snap.exists()) {
-          showToast('Room not found! Check code.');
-          return;
-        }
-        const data = snap.data();
-        if (data.phase !== 'lobby') {
-          showToast('Game already in progress!');
-          return;
-        }
-
-        const players = data.players || [];
-        if (players.length >= 15) {
-          showToast('Room is full (max 15)!');
-          return;
-        }
-
-        // Add or update player
-        const existingIdx = players.findIndex(p => p.id === myPlayerId);
-        if (existingIdx === -1) {
-          players.push({
-            id: myPlayerId,
-            name: name,
-            isHost: false,
-            role: null,
-            isAlive: true,
-            isReady: false,
-            nightAction: null,
-            vote: null
-          });
-          await updateDoc(roomRef, { players });
-        }
-
-        currentRoomCode = code;
-        listenToRoom(code);
-        AudioFX.beep(550, 'sine', 0.1);
-      } catch (err) {
-        console.error(err);
-        showToast('Error joining room.');
-      }
-    };
-
-    // --- REALTIME ROOM LISTENER ---
-    function listenToRoom(code) {
-      if (roomUnsubscribe) roomUnsubscribe();
-      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'mafia_rooms', code);
-
-      roomUnsubscribe = onSnapshot(roomRef, (docSnap) => {
-        if (!docSnap.exists()) {
-          showToast('Room closed or disbanded.');
-          switchScreen('screenLanding');
-          return;
-        }
-        currentRoomData = docSnap.data();
-        syncUIWithRoomData(currentRoomData);
-      }, (err) => {
-        console.error("Room listener error", err);
-      });
+      reader.readAsDataURL(file);
     }
 
-    function syncUIWithRoomData(room) {
-      const isHost = room.hostId === myPlayerId;
-      const me = (room.players || []).find(p => p.id === myPlayerId);
+    function addPlayer() {
+      const input = document.getElementById('playerNameInput');
+      const name = input.value.trim();
+      if (!name) return;
+      state.players.push({
+        id: 'p_' + Date.now(),
+        name,
+        avatar: tempAvatar,
+        photo: tempPhotoData,
+        isAlive: true,
+        role: null
+      });
+      tempPhotoData = null;
+      render();
+    }
 
-      // 1. Lobby Phase
-      if (room.phase === 'lobby') {
-        switchScreen('screenLobby');
-        document.getElementById('lobbyRoomCode').innerText = room.code;
-        document.getElementById('lobbyPlayerCount').innerText = room.players.length;
-        
-        // Host vs Guest UI
-        const hostBadge = document.getElementById('hostStatusBadge');
-        const hostControls = document.getElementById('hostRoleControls');
-        const guestBanner = document.getElementById('guestWaitingBanner');
+    function removePlayer(id) {
+      state.players = state.players.filter(p => p.id !== id);
+      render();
+    }
 
-        if (isHost) {
-          hostBadge.innerText = 'You are Host 👑';
-          hostBadge.className = 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-blood-600/30 text-blood-400 border border-blood-500/30';
-          hostControls.classList.remove('hidden');
-          guestBanner.classList.add('hidden');
-          renderHostRoleCounters(room);
-        } else {
-          hostBadge.innerText = 'Joined as Member';
-          hostBadge.className = 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-noir-800 text-gray-400 border border-white/5';
-          hostControls.classList.add('hidden');
-          guestBanner.classList.remove('hidden');
-        }
+    function goToRoleConfig() {
+      autoBalanceRoles();
+      state.view = 'ROLE_CONFIG';
+      render();
+    }
 
-        // Render joined players
-        const roster = document.getElementById('lobbyPlayersList');
-        roster.innerHTML = '';
-        room.players.forEach(p => {
-          const chip = document.createElement('div');
-          chip.className = `px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 ${p.id === myPlayerId ? 'bg-cyan-950/60 border-cyan-500/50 text-cyan-300' : 'bg-noir-900 border-noir-700 text-gray-300'}`;
-          chip.innerHTML = `
-            <span>${p.isHost ? '👑' : '👤'}</span>
-            <span>${p.name}</span>
-            ${p.id === myPlayerId ? '<span class="text-[9px] text-cyan-400 uppercase font-black">(You)</span>' : ''}
-          `;
-          roster.appendChild(chip);
-        });
+    /* =====================================================================
+       VIEW: 2. ROLE CONFIGURATION
+    ===================================================================== */
+    function autoBalanceRoles() {
+      const total = state.players.length;
+      let mafiaCount = Math.max(1, Math.floor(total / 4));
+      let docCount = total >= 4 ? 1 : 0;
+      let detCount = total >= 4 ? 1 : 0;
+      let jesterCount = total >= 5 ? 1 : 0;
+      let villagerCount = total - (mafiaCount + docCount + detCount + jesterCount);
+
+      if (villagerCount < 1) {
+        if (jesterCount > 0) jesterCount = 0;
+        villagerCount = total - (mafiaCount + docCount + detCount + jesterCount);
+      }
+      state.roleCounts = {
+        mafia: mafiaCount,
+        detective: detCount,
+        doctor: docCount,
+        jester: jesterCount,
+        villager: Math.max(0, villagerCount)
+      };
+    }
+
+    function renderRoleConfig() {
+      const totalSelected = Object.values(state.roleCounts).reduce((a, b) => a + b, 0);
+      const diff = state.players.length - totalSelected;
+
+      appRoot.innerHTML = `
+        <div class="space-y-4">
+          <div class="text-center">
+            <h2 class="text-2xl font-black cinzel text-white">రోల్స్ సెటప్</h2>
+            <p class="text-xs ${diff === 0 ? 'text-emerald-400 font-bold' : 'text-amber-400 font-semibold'}">
+              ${diff === 0 ? '✅ పర్ఫెక్ట్ బ్యాలెన్స్!' : diff > 0 ? `ఇంకా ${diff} రోల్స్ కేటాయించాలి` : `${Math.abs(diff)} రోల్స్ ఎక్కువయ్యాయి`}
+            </p>
+          </div>
+
+          <div class="space-y-2.5">
+            ${[
+              { key: 'mafia', name: 'హంతకుడు (Mafia)', icon: '🔪', color: 'border-rose-500/40 bg-rose-950/20 text-rose-400' },
+              { key: 'detective', name: 'సి.ఐ.డి (Detective)', icon: '🕵️', color: 'border-cyan-500/40 bg-cyan-950/20 text-cyan-400' },
+              { key: 'doctor', name: 'ప్రాణదాత (Doctor)', icon: '💉', color: 'border-emerald-500/40 bg-emerald-950/20 text-emerald-400' },
+              { key: 'jester', name: 'పిచ్చి రోల్ (Jester)', icon: '🃏', color: 'border-purple-500/40 bg-purple-950/20 text-purple-400' },
+              { key: 'villager', name: 'గ్రామస్థులు (Villagers)', icon: '🌾', color: 'border-amber-500/40 bg-amber-950/20 text-amber-400' }
+            ].map(r => `
+              <div class="flex items-center justify-between p-3 rounded-2xl border ${r.color}">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-2xl">${r.icon}</span>
+                  <span class="font-bold text-sm text-slate-200">${r.name}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button onclick="changeRoleCount('${r.key}', -1)" class="w-8 h-8 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 flex items-center justify-center">-</button>
+                  <span class="font-black text-white w-4 text-center">${state.roleCounts[r.key]}</span>
+                  <button onclick="changeRoleCount('${r.key}', 1)" class="w-8 h-8 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 flex items-center justify-center">+</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="flex gap-2">
+            <button onclick="state.view = 'SETUP'; render();" class="flex-1 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-slate-300 text-sm">
+              ⬅️ వెనక్కి
+            </button>
+            <button onclick="startGame()" ${diff !== 0 ? 'disabled' : ''} 
+              class="flex-[2] py-3 rounded-2xl font-black text-sm uppercase shadow-xl ${
+                diff !== 0 
+                ? 'bg-slate-800 text-slate-500 cursor-not-allowed' 
+                : 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-emerald-900/50'
+              }">
+              ఆట ప్రారంభించండి! 🎭
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function changeRoleCount(roleKey, delta) {
+      const next = state.roleCounts[roleKey] + delta;
+      if (next < 0) return;
+      if (roleKey === 'mafia' && next < 1) return; // At least 1 mafia
+      state.roleCounts[roleKey] = next;
+      render();
+    }
+
+    function startGame() {
+      // Shuffle roles and assign to players
+      const roleDeck = [];
+      Object.entries(state.roleCounts).forEach(([role, count]) => {
+        for (let i = 0; i < count; i++) roleDeck.push(role);
+      });
+      // Fisher-Yates shuffle
+      for (let i = roleDeck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [roleDeck[i], roleDeck[j]] = [roleDeck[j], roleDeck[i]];
+      }
+      state.players.forEach((p, idx) => {
+        p.role = roleDeck[idx];
+        p.isAlive = true;
+      });
+      state.revealIndex = 0;
+      state.isCardRevealed = false;
+      state.view = 'REVEAL';
+      render();
+    }
+
+    /* =====================================================================
+       VIEW: 3. PASS & REVEAL (3D CARD FLIP)
+    ===================================================================== */
+    function renderReveal() {
+      const player = state.players[state.revealIndex];
+      const role = ROLE_INFO[player.role];
+
+      appRoot.innerHTML = `
+        <div class="space-y-4">
+          <div class="text-center">
+            <span class="text-[10px] font-bold tracking-widest text-rose-400 uppercase bg-rose-950/60 px-3 py-1 rounded-full border border-rose-800/40">రహస్య పాత్ర వెల్లడి</span>
+            <h2 class="text-2xl font-black text-white mt-1">ఫోన్ ${player.name} కి ఇవ్వండి</h2>
+            <p class="text-xs text-slate-400">పక్కన ఎవరూ చూడకుండా ప్రైవేట్‌గా చెక్ చేసుకోండి!</p>
+          </div>
+
+          <!-- 3D FLIP CARD CONTAINER -->
+          <div class="perspective-1000 w-full h-[360px] cursor-pointer" onclick="toggleCardFlip()">
+            <div id="flipCardInner" class="w-full h-full transition-all duration-700 transform-style-3d relative rounded-3xl ${state.isCardRevealed ? 'rotate-y-180' : ''}">
+              
+              <!-- CARD FRONT (LOCKED) -->
+              <div class="absolute inset-0 backface-hidden bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-slate-700/80 rounded-3xl p-6 flex flex-col items-center justify-between shadow-2xl">
+                <div class="w-20 h-20 rounded-3xl bg-slate-800 border-2 border-rose-500/30 flex items-center justify-center text-4xl shadow-inner overflow-hidden">
+                  ${player.photo ? `<img src="${player.photo}" class="w-full h-full object-cover">` : player.avatar}
+                </div>
+                <div class="text-center">
+                  <p class="text-xs text-slate-400">Player</p>
+                  <p class="text-xl font-black text-white">${player.name}</p>
+                </div>
+                <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-center w-full animate-pulse">
+                  <span class="text-2xl block mb-1">👆</span>
+                  <p class="text-xs font-bold text-rose-300">కార్డు తిప్పడానికి ఇక్కడ టచ్ చేయండి</p>
+                </div>
+                <p class="text-[10px] text-slate-500">Tap anywhere to reveal</p>
+              </div>
+
+              <!-- CARD BACK (ROLE REVEALED) -->
+              <div class="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br ${role.color} border-2 ${role.borderColor} rounded-3xl p-6 flex flex-col justify-between shadow-2xl text-white">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <span class="px-2.5 py-1 rounded-full bg-black/40 text-[10px] font-black uppercase tracking-wider">${role.badge}</span>
+                    <h3 class="text-2xl font-black mt-1">${role.name}</h3>
+                  </div>
+                  <span class="text-4xl">${role.icon}</span>
+                </div>
+
+                <div class="space-y-3 bg-black/30 backdrop-blur p-4 rounded-2xl border border-white/10 telugu-font">
+                  <p class="text-sm font-semibold text-slate-100">${role.desc}</p>
+                  <div class="border-t border-white/10 pt-2">
+                    <p class="text-xs text-amber-300 font-bold">గెలిచే విధానం:</p>
+                    <p class="text-xs text-slate-200">${role.win}</p>
+                  </div>
+                </div>
+
+                <div class="text-center">
+                  <p class="text-[11px] text-white/80 font-bold bg-black/40 py-2 rounded-xl">మీ రోల్ గుర్తుపెట్టుకుని కింద బటన్ నొక్కండి</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- NEXT BUTTON -->
+          <button onclick="nextRevealPlayer()" class="w-full py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-sm text-white shadow-xl flex items-center justify-center gap-2">
+            ${state.revealIndex < state.players.length - 1 ? 'తదుపరి ప్లేయర్‌కి ఇవ్వండి ➔' : 'రాత్రి ఆరంభించండి (Start Night) 🌙'}
+          </button>
+        </div>
+      `;
+    }
+
+    function toggleCardFlip() {
+      state.isCardRevealed = !state.isCardRevealed;
+      playSound('tick');
+      render();
+    }
+
+    function nextRevealPlayer() {
+      if (state.revealIndex < state.players.length - 1) {
+        state.revealIndex++;
+        state.isCardRevealed = false;
+        render();
+      } else {
+        startNightPhase();
+      }
+    }
+
+    /* =====================================================================
+       VIEW: 4. NIGHT PHASE SEQUENCE
+    ===================================================================== */
+    function startNightPhase() {
+      playSound('night');
+      state.nightPlayerIndex = 0;
+      state.currentNightAction = {
+        mafiaTarget: null,
+        doctorTarget: null,
+        detectiveCheck: null,
+        detectiveResult: null
+      };
+      state.view = 'NIGHT_TURN';
+      render();
+    }
+
+    function renderNightTurn() {
+      const livingPlayers = state.players.filter(p => p.isAlive);
+      const currentPlayer = livingPlayers[state.nightPlayerIndex];
+
+      if (!currentPlayer) {
+        finishNightPhase();
+        return;
       }
 
-      // 2. Secret Role Reveal Phase
-      else if (room.phase === 'reveal') {
-        switchScreen('screenReveal');
-        if (me) {
-          document.getElementById('revealPlayerGreeting').innerText = `Hello, ${me.name}`;
-          const roleInfo = ROLES[me.role] || ROLES.villager;
-          document.getElementById('myRoleIcon').innerText = roleInfo.icon;
-          document.getElementById('myRoleTitle').innerText = roleInfo.name;
-          document.getElementById('myRoleTelugu').innerText = roleInfo.telugu;
-          document.getElementById('myRoleDesc').innerText = roleInfo.desc;
+      const role = currentPlayer.role;
 
-          const readyBtn = document.getElementById('btnImReady');
-          if (me.isReady) {
-            readyBtn.innerText = 'Waiting for other players... ⏳';
-            readyBtn.disabled = true;
-            readyBtn.className = 'w-full mt-4 py-3 rounded-xl bg-noir-800 text-gray-400 font-bold text-xs uppercase border border-white/10';
-          } else {
-            readyBtn.innerText = "I've Memorized My Role! 🛡️";
-            readyBtn.disabled = false;
-            readyBtn.className = 'w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-blood-700 to-blood-600 text-white font-black text-xs uppercase tracking-wider active:scale-95 transition-all shadow-lg';
+      appRoot.innerHTML = `
+        <div class="space-y-4">
+          <!-- Atmosphere Header -->
+          <div class="text-center">
+            <span class="text-3xl block mb-1">🌙</span>
+            <span class="text-xs font-bold text-indigo-400 bg-indigo-950/60 px-3 py-1 rounded-full border border-indigo-800/40">రాత్రి వేళ (Night Time)</span>
+            <h2 class="text-2xl font-black text-white mt-1">ఫోన్ ${currentPlayer.name} చేతిలో ఉండాలి</h2>
+            <p class="text-xs text-slate-400">అందరూ కళ్ళు మూసుకోవాలి, ఇతను ఒక్కడే స్క్రీన్ చూడాలి</p>
+          </div>
+
+          <!-- ACTION BOX BASED ON ROLE -->
+          <div class="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-4">
+            ${renderNightRoleUI(currentPlayer, livingPlayers)}
+          </div>
+
+          <button onclick="submitNightAction()" class="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 font-bold text-sm text-white shadow-xl shadow-indigo-900/40">
+            యాక్షన్ పూర్తయింది (Done & Pass) ➔
+          </button>
+        </div>
+      `;
+    }
+
+    function renderNightRoleUI(player, livingPlayers) {
+      const targets = livingPlayers.filter(p => p.id !== player.id);
+
+      if (player.role === 'mafia') {
+        return `
+          <div class="space-y-3">
+            <div class="flex items-center gap-2 text-rose-400">
+              <span class="text-2xl">🔪</span>
+              <div>
+                <h4 class="font-black text-base">హత్య చేయాల్సిన టార్గెట్‌ని ఎంచుకోండి</h4>
+                <p class="text-xs text-slate-400">ఎవరిని ఎలిమినేట్ చేయాలనుకుంటున్నారు?</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+              ${targets.map(t => `
+                <button onclick="setMafiaTarget('${t.id}')" class="p-2.5 rounded-2xl border text-left flex items-center gap-2 transition-all ${
+                  state.currentNightAction.mafiaTarget === t.id 
+                  ? 'border-rose-500 bg-rose-950/60 text-white ring-2 ring-rose-500' 
+                  : 'border-slate-800 bg-slate-950 text-slate-300'
+                }">
+                  <span class="text-xl">${t.photo ? `<img src="${t.photo}" class="w-7 h-7 rounded-lg object-cover">` : t.avatar}</span>
+                  <span class="text-xs font-bold truncate">${t.name}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else if (player.role === 'detective') {
+        return `
+          <div class="space-y-3">
+            <div class="flex items-center gap-2 text-cyan-400">
+              <span class="text-2xl">🕵️</span>
+              <div>
+                <h4 class="font-black text-base">ఐడెంటిటీని కనిపెట్టండి</h4>
+                <p class="text-xs text-slate-400">ఎవరి రోల్ తెలుసుకోవాలనుకుంటున్నారు?</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+              ${targets.map(t => `
+                <button onclick="investigatePlayer('${t.id}')" class="p-2.5 rounded-2xl border text-left flex items-center gap-2 transition-all ${
+                  state.currentNightAction.detectiveCheck === t.id 
+                  ? 'border-cyan-500 bg-cyan-950/60 text-white ring-2 ring-cyan-500' 
+                  : 'border-slate-800 bg-slate-950 text-slate-300'
+                }">
+                  <span class="text-xl">${t.photo ? `<img src="${t.photo}" class="w-7 h-7 rounded-lg object-cover">` : t.avatar}</span>
+                  <span class="text-xs font-bold truncate">${t.name}</span>
+                </button>
+              `).join('')}
+            </div>
+
+            ${state.currentNightAction.detectiveResult ? `
+              <div class="p-3 rounded-2xl bg-slate-950 border border-cyan-500/50 text-center animate-bounce">
+                <p class="text-xs text-slate-400">ఇన్వెస్టిగేషన్ ఫలితం:</p>
+                <p class="text-base font-black ${state.currentNightAction.detectiveResult === 'MAFIA' ? 'text-rose-400' : 'text-emerald-400'}">
+                  ${state.currentNightAction.detectiveResult === 'MAFIA' ? '⚠️ MAFIA (హంతకుడు)!' : '🕊️ INNOCENT (సాధు జీవి)'}
+                </p>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      } else if (player.role === 'doctor') {
+        return `
+          <div class="space-y-3">
+            <div class="flex items-center gap-2 text-emerald-400">
+              <span class="text-2xl">💉</span>
+              <div>
+                <h4 class="font-black text-base">ప్రాణ రక్షణ కవచం ఇవ్వండి</h4>
+                <p class="text-xs text-slate-400">ఎవరిని కాపాడాలనుకుంటున్నారు? (మిమ్మల్ని మీరూ కాపాడుకోవచ్చు)</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+              ${livingPlayers.map(t => `
+                <button onclick="setDoctorTarget('${t.id}')" class="p-2.5 rounded-2xl border text-left flex items-center gap-2 transition-all ${
+                  state.currentNightAction.doctorTarget === t.id 
+                  ? 'border-emerald-500 bg-emerald-950/60 text-white ring-2 ring-emerald-500' 
+                  : 'border-slate-800 bg-slate-950 text-slate-300'
+                }">
+                  <span class="text-xl">${t.photo ? `<img src="${t.photo}" class="w-7 h-7 rounded-lg object-cover">` : t.avatar}</span>
+                  <span class="text-xs font-bold truncate">${t.name} ${t.id === player.id ? '(నువ్వే)' : ''}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        // Villager or Jester stealth screen
+        return `
+          <div class="text-center py-6 space-y-3">
+            <span class="text-5xl block animate-pulse">😴</span>
+            <h4 class="font-black text-lg text-amber-300">మీరు నిద్రపోతున్నారు...</h4>
+            <p class="text-xs text-slate-400 leading-relaxed px-4">
+              మీకు రాత్రి పూట ఎటువంటి శక్తులు లేవు. పక్కన ఉన్నవాళ్ళకి అనుమానం రాకుండా స్క్రీన్ మీద కొన్నిసార్లు టచ్ చేసి ఫోన్ పాస్ చేయండి!
+            </p>
+            <div class="flex justify-center gap-2 pt-2">
+              <button onclick="playSound('tick')" class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300">Tap 1</button>
+              <button onclick="playSound('tick')" class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300">Tap 2</button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function setMafiaTarget(id) {
+      state.currentNightAction.mafiaTarget = id;
+      playSound('tick');
+      render();
+    }
+
+    function investigatePlayer(id) {
+      const target = state.players.find(p => p.id === id);
+      state.currentNightAction.detectiveCheck = id;
+      state.currentNightAction.detectiveResult = target.role === 'mafia' ? 'MAFIA' : 'INNOCENT';
+      playSound('tick');
+      render();
+    }
+
+    function setDoctorTarget(id) {
+      state.currentNightAction.doctorTarget = id;
+      playSound('tick');
+      render();
+    }
+
+    function submitNightAction() {
+      const livingPlayers = state.players.filter(p => p.isAlive);
+      state.nightPlayerIndex++;
+
+      if (state.nightPlayerIndex < livingPlayers.length) {
+        render();
+      } else {
+        finishNightPhase();
+      }
+    }
+
+    function finishNightPhase() {
+      const killTarget = state.currentNightAction.mafiaTarget;
+      const saveTarget = state.currentNightAction.doctorTarget;
+
+      let killedPlayer = null;
+      let wasSaved = false;
+
+      if (killTarget) {
+        if (killTarget === saveTarget) {
+          wasSaved = true;
+        } else {
+          killedPlayer = state.players.find(p => p.id === killTarget);
+          if (killedPlayer) {
+            killedPlayer.isAlive = false;
           }
         }
       }
 
-      // 3. Night Phase
-      else if (room.phase === 'night') {
-        switchScreen('screenNight');
-        renderNightForUser(room, me, isHost);
+      state.lastNightResult = {
+        killedId: killedPlayer ? killedPlayer.id : null,
+        saved: wasSaved
+      };
+
+      // Check win condition right after night kill
+      const verdict = checkWinCondition();
+      if (verdict) {
+        triggerVictory(verdict.winner, verdict.msg);
+        return;
       }
 
-      // 4. Day Phase
-      else if (room.phase === 'day') {
-        switchScreen('screenDay');
-        renderDayForUser(room, me, isHost);
-      }
-
-      // 5. Game Over
-      else if (room.phase === 'gameover') {
-        switchScreen('screenGameOver');
-        renderGameOver(room, isHost);
-      }
+      playSound('morning');
+      state.view = 'DAY_GAZETTE';
+      render();
     }
 
-    // --- LOBBY ROLE CONFIGURATION (HOST) ---
-    function renderHostRoleCounters(room) {
-      const container = document.getElementById('lobbyRolesList');
-      container.innerHTML = '';
-      const cfg = room.roleConfig || { mafia: 1, detective: 1, doctor: 1, jester: 0, villager: 1 };
+    /* =====================================================================
+       VIEW: 5. DAY BREAKING NEWS GAZETTE
+    ===================================================================== */
+    function renderDayGazette() {
+      const killed = state.lastNightResult.killedId 
+        ? state.players.find(p => p.id === state.lastNightResult.killedId)
+        : null;
 
-      Object.keys(ROLES).forEach(rKey => {
-        const role = ROLES[rKey];
-        const val = cfg[rKey] || 0;
-        const row = document.createElement('div');
-        row.className = 'flex items-center justify-between p-2 rounded-xl bg-noir-900 border border-noir-700/60';
-        row.innerHTML = `
-          <div class="flex items-center gap-2">
-            <span class="text-base">${role.icon}</span>
-            <div>
-              <span class="text-xs font-bold text-white">${role.name}</span>
-              <span class="text-[9px] text-gray-500 block">${role.telugu}</span>
+      appRoot.innerHTML = `
+        <div class="space-y-4">
+          <div class="text-center">
+            <span class="text-3xl block">☀️</span>
+            <span class="text-[10px] font-bold text-amber-400 bg-amber-950/60 px-3 py-1 rounded-full border border-amber-800/40">తెల్లవారింది (Morning Phase)</span>
+            <h2 class="text-2xl font-black text-white mt-1 cinzel">MIDNIGHT GAZETTE</h2>
+          </div>
+
+          <!-- BREAKING NEWS NEWSPAPER CARD -->
+          <div class="p-6 rounded-3xl bg-gradient-to-b from-stone-900 to-slate-950 border-2 ${killed ? 'border-rose-600/70 shadow-rose-950/50' : 'border-emerald-600/70 shadow-emerald-950/50'} shadow-2xl space-y-4 text-center">
+            <div class="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${killed ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'}">
+              ${killed ? '🚨 ఘోర హత్య జరిగింది!' : '🛡️ ప్రాణాపాయం తప్పింది!'}
+            </div>
+
+            ${killed ? `
+              <div class="space-y-3">
+                <div class="w-24 h-24 mx-auto rounded-3xl bg-slate-800 border-2 border-rose-500 overflow-hidden text-4xl flex items-center justify-center shadow-xl">
+                  ${killed.photo ? `<img src="${killed.photo}" class="w-full h-full object-cover">` : killed.avatar}
+                </div>
+                <div>
+                  <h3 class="text-2xl font-black text-rose-400">${killed.name}</h3>
+                  <p class="text-xs text-slate-300 telugu-font mt-1">మాఫియా దాడిలో ఈ రాత్రి ప్రాణాలు కోల్పోయారు. గ్రామం శోకసంద్రంలో మునిగిపోయింది!</p>
+                </div>
+              </div>
+            ` : `
+              <div class="space-y-3 py-4">
+                <span class="text-6xl block animate-bounce">🕊️</span>
+                <h3 class="text-2xl font-black text-emerald-400">ఎవరూ చనిపోలేదు!</h3>
+                <p class="text-xs text-slate-300 telugu-font">డాక్టర్ సరైన సమయానికి రక్షించడం వల్ల లేదా మాఫియా గురి తప్పడం వల్ల ప్రాణనష్టం జరగలేదు!</p>
+              </div>
+            `}
+          </div>
+
+          <button onclick="startDiscussion()" class="w-full py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 font-black text-slate-950 text-sm shadow-xl flex items-center justify-center gap-2">
+            పంచాయితీ / చర్చలు మొదలుపెట్టండి 🗣️
+          </button>
+        </div>
+      `;
+    }
+
+    /* =====================================================================
+       VIEW: 6. DAY DISCUSSION & TIMER
+    ===================================================================== */
+    function startDiscussion() {
+      state.timerSeconds = 60;
+      state.view = 'DAY_DISCUSS';
+      render();
+
+      state.timerInterval = setInterval(() => {
+        state.timerSeconds--;
+        if (state.timerSeconds <= 5 && state.timerSeconds > 0) {
+          playSound('tick');
+        }
+        const timerEl = document.getElementById('discussTimer');
+        if (timerEl) {
+          timerEl.innerText = state.timerSeconds + 's';
+        }
+        if (state.timerSeconds <= 0) {
+          clearInterval(state.timerInterval);
+          state.timerInterval = null;
+          goToVoting();
+        }
+      }, 1000);
+    }
+
+    function renderDayDiscuss() {
+      const living = state.players.filter(p => p.isAlive);
+
+      appRoot.innerHTML = `
+        <div class="space-y-4">
+          <div class="text-center">
+            <span class="text-xs font-bold text-amber-400 bg-amber-950/60 px-3 py-1 rounded-full border border-amber-800/40">ఓపెన్ చర్చలు (Discussion Round)</span>
+            <h2 class="text-2xl font-black text-white mt-1">దొంగ ఎవరో కనిపెట్టండి!</h2>
+          </div>
+
+          <!-- TIMER DIAL -->
+          <div class="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-3xl animate-spin">⏳</span>
+              <div>
+                <p class="text-[10px] text-slate-400 font-bold uppercase">సమయం మిగిలింది</p>
+                <p id="discussTimer" class="text-3xl font-black text-amber-400 font-mono">${state.timerSeconds}s</p>
+              </div>
+            </div>
+            <button onclick="addExtraTime(30)" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 border border-slate-700">
+              +30 సెకన్లు
+            </button>
+          </div>
+
+          <!-- Living friends reminder -->
+          <div class="p-4 rounded-3xl bg-slate-900/60 border border-slate-800">
+            <p class="text-xs font-bold text-slate-400 mb-2">బ్రతికున్న ఆటగాళ్ళు (${living.length}):</p>
+            <div class="grid grid-cols-2 gap-2">
+              ${living.map(p => `
+                <div class="p-2 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center gap-2">
+                  <span class="text-lg">${p.photo ? `<img src="${p.photo}" class="w-6 h-6 rounded-md object-cover">` : p.avatar}</span>
+                  <span class="text-xs font-bold text-white truncate">${p.name}</span>
+                </div>
+              `).join('')}
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <button onclick="updateRoleConfig('${rKey}', -1)" class="w-6 h-6 rounded-md bg-noir-800 text-gray-300 font-bold text-xs flex items-center justify-center">-</button>
-            <span class="w-4 text-center text-xs font-black text-white">${val}</span>
-            <button onclick="updateRoleConfig('${rKey}', 1)" class="w-6 h-6 rounded-md bg-noir-800 text-gray-300 font-bold text-xs flex items-center justify-center">+</button>
-          </div>
-        `;
-        container.appendChild(row);
-      });
 
-      const totalAssigned = Object.values(cfg).reduce((a, b) => a + b, 0);
-      const totalExpected = (room.players || []).length;
-      document.getElementById('lobbyAssignedSum').innerText = totalAssigned;
-      document.getElementById('lobbyExpectedSum').innerText = totalExpected;
-
-      const helper = document.getElementById('hostBalanceHelper');
-      const statusLabel = document.getElementById('lobbyBalanceStatus');
-      const startBtn = document.getElementById('hostStartGameBtn');
-
-      if (totalExpected < 4) {
-        helper.innerText = `Need at least 4 players (Current: ${totalExpected})`;
-        statusLabel.innerText = 'Min 4 Players';
-        statusLabel.className = 'font-bold text-amber-400';
-        startBtn.disabled = true;
-      } else if ((cfg.mafia || 0) < 1) {
-        helper.innerText = 'At least 1 Mafia required';
-        statusLabel.innerText = 'No Mafia';
-        statusLabel.className = 'font-bold text-red-500';
-        startBtn.disabled = true;
-      } else if (totalAssigned !== totalExpected) {
-        helper.innerText = `Sum of roles must equal ${totalExpected}`;
-        statusLabel.innerText = 'Count Mismatch';
-        statusLabel.className = 'font-bold text-red-500';
-        startBtn.disabled = true;
-      } else {
-        helper.innerText = 'Perfect balance! Ready to start.';
-        statusLabel.innerText = 'Ready!';
-        statusLabel.className = 'font-bold text-emerald-400';
-        startBtn.disabled = false;
-      }
+          <button onclick="goToVoting()" class="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 font-bold text-sm text-white shadow-xl">
+            ఓటింగ్ రౌండ్‌కి వెళ్ళండి 🗳️
+          </button>
+        </div>
+      `;
     }
 
-    window.updateRoleConfig = async function(roleKey, delta) {
-      if (!currentRoomData || currentRoomData.hostId !== myPlayerId) return;
-      const cfg = { ...currentRoomData.roleConfig };
-      cfg[roleKey] = Math.max(0, (cfg[roleKey] || 0) + delta);
-      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'mafia_rooms', currentRoomCode);
-      await updateDoc(roomRef, { roleConfig: cfg });
-      AudioFX.beep(500, 'sine', 0.05);
-    };
-
-    window.autoBalanceHostRoles = async function() {
-      if (!currentRoomData || currentRoomData.hostId !== myPlayerId) return;
-      const n = (currentRoomData.players || []).length;
-      let mafia = n >= 8 ? 2 : 1;
-      let detective = 1;
-      let doctor = 1;
-      let jester = n >= 6 ? 1 : 0;
-      let villager = Math.max(0, n - (mafia + detective + doctor + jester));
-
-      const newCfg = { mafia, detective, doctor, jester, villager };
-      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'mafia_rooms', currentRoomCode);
-      await updateDoc(roomRef, { roleConfig: newCfg });
-      AudioFX.morningSunrise();
-    };
-
-    // --- GAME INITIALIZATION (HOST) ---
-    window.hostInitiateGame = async function() {
-      if (!currentRoomData || currentRoomData.hostId !== myPlayerId) return;
-      const { players, roleConfig } = currentRoomData;
-
-      // Build role pool & shuffle
-      let pool = [];
-      Object.keys(roleConfig).forEach(r => {
-        for (let i = 0; i < roleConfig[r]; i++) pool.push(r);
-      });
-      for (let i = pool.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [pool[i], pool[j]] = [pool[j], pool[i]];
-      }
-
-      const assignedPlayers = players.map((p, idx) => ({
-        ...p,
-        role: pool[idx],
-        isAlive: true,
-        isReady: false,
-        nightAction: null,
-        vote: null
-      }));
-
-      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'mafia_rooms', currentRoomCode);
-      await updateDoc(roomRef, {
-        phase: 'reveal',
-        players: assignedPlayers,
-        round: 1,
-        nightPicks: { mafiaTarget: null, doctorTarget: null },
-        nightCasualty: null
-      });
-      AudioFX.beep(440, 'triangle', 0.3);
-    };
-
-    // --- ROLE REVEAL TOUCH HANDLER ---
-    const flapCard = document.getElementById('revealFlapCard');
-    function unlockFlap() {
-      document.getElementById('cardLockedView').classList.add('hidden');
-      document.getElementById('cardUnlockedView').classList.remove('hidden');
-      flapCard.classList.remove('border-dashed');
-      flapCard.classList.add('border-blood-500', 'crimson-glow');
-      AudioFX.beep(650, 'triangle', 0.08);
-    }
-    function lockFlap() {
-      document.getElementById('cardLockedView').classList.remove('hidden');
-      document.getElementById('cardUnlockedView').classList.add('hidden');
-      flapCard.classList.add('border-dashed');
-      flapCard.classList.remove('border-blood-500', 'crimson-glow');
+    function addExtraTime(secs) {
+      state.timerSeconds += secs;
+      const timerEl = document.getElementById('discussTimer');
+      if (timerEl) timerEl.innerText = state.timerSeconds + 's';
+      playSound('tick');
     }
 
-    flapCard.addEventListener('mousedown', unlockFlap);
-    flapCard.addEventListener('mouseup', lockFlap);
-    flapCard.addEventListener('mouseleave', lockFlap);
-    flapCard.addEventListener('touchstart', (e) => { e.preventDefault(); unlockFlap(); });
-    flapCard.addEventListener('touchend', (e) => { e.preventDefault(); lockFlap(); });
-
-    window.confirmMyRoleReady = async function() {
-      if (!currentRoomData) return;
-      const players = currentRoomData.players.map(p => {
-        if (p.id === myPlayerId) return { ...p, isReady: true };
-        return p;
-      });
-
-      const allReady = players.every(p => p.isReady);
-      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'mafia_rooms', currentRoomCode);
-
-      if (allReady) {
-        await updateDoc(roomRef, {
-          players: players,
-          phase: 'night'
-        });
-        AudioFX.nightGong();
-      } else {
-        await updateDoc(roomRef, { players });
-        AudioFX.beep(500, 'sine', 0.05);
+    function goToVoting() {
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
       }
-    };
+      state.votes = {};
+      state.view = 'DAY_VOTE';
+      render();
+    }
 
-    // --- NIGHT PHASE RENDERING ---
-    function renderNightForUser(room, me, isHost) {
-      AudioFX.init();
-      const mafiaPanel = document.getElementById('mafiaNightPanel');
-      const detPanel = document.getElementById('detectiveNightPanel');
-      const docPanel = document.getElementById('doctorNightPanel');
-      const sleepPanel = document.getElementById('sleepingNightPanel');
-      const hostAdvanceBtn = document.getElementById('hostAdvanceNightBtn');
-      const submitBtn = document.getElementById('btnSubmitNightAction');
+    /* =====================================================================
+       VIEW: 7. DAY VOTING & EXECUTION
+    ===================================================================== */
+    let currentVoterIdx = 0;
 
-      mafiaPanel.classList.add('hidden');
-      detPanel.classList.add('hidden');
-      docPanel.classList.add('hidden');
-      sleepPanel.classList.add('hidden');
+    function renderDayVote() {
+      const living = state.players.filter(p => p.isAlive);
+      const voter = living[currentVoterIdx];
 
-      if (isHost) {
-        hostAdvanceBtn.classList.remove('hidden');
-      } else {
-        hostAdvanceBtn.classList.add('hidden');
-      }
-
-      if (!me || !me.isAlive) {
-        sleepPanel.classList.remove('hidden');
-        document.getElementById('nightHeaderTitle').innerText = 'Ghost Watch';
-        submitBtn.disabled = true;
+      if (!voter) {
+        tallyVotesAndExecute();
         return;
       }
 
-      const alivePlayers = room.players.filter(p => p.isAlive);
-
-      if (me.role === 'mafia') {
-        mafiaPanel.classList.remove('hidden');
-        document.getElementById('nightHeaderTitle').innerText = 'Mafia Syndicate';
-        populateNightTargets('mafiaTargetsGrid', alivePlayers.filter(p => p.role !== 'mafia'), me.nightAction);
-        submitBtn.disabled = !selectedNightTarget;
-      } else if (me.role === 'detective') {
-        detPanel.classList.remove('hidden');
-        document.getElementById('nightHeaderTitle').innerText = 'CID Interrogation';
-        populateNightTargets('detectiveTargetsGrid', alivePlayers.filter(p => p.id !== me.id), me.nightAction);
-        submitBtn.disabled = !selectedNightTarget;
-      } else if (me.role === 'doctor') {
-        docPanel.classList.remove('hidden');
-        document.getElementById('nightHeaderTitle').innerText = 'Doctor Sanctuary';
-        populateNightTargets('doctorTargetsGrid', alivePlayers, me.nightAction);
-        submitBtn.disabled = !selectedNightTarget;
-      } else {
-        // Villager or Jester
-        sleepPanel.classList.remove('hidden');
-        document.getElementById('nightHeaderTitle').innerText = 'Sweet Dreams...';
-        submitBtn.disabled = true;
-      }
-    }
-
-    function populateNightTargets(containerId, targetsList, currentTargetId) {
-      const container = document.getElementById(containerId);
-      container.innerHTML = '';
-
-      targetsList.forEach(t => {
-        const isSelected = (selectedNightTarget === t.id) || (currentTargetId === t.id);
-        const btn = document.createElement('button');
-        btn.className = `p-3 rounded-xl border text-left flex items-center justify-between transition-all active:scale-95 ${isSelected ? 'border-indigo-500 bg-indigo-950/60 shadow-lg' : 'border-noir-700 bg-noir-900'}`;
-        btn.onclick = () => {
-          selectedNightTarget = t.id;
-          document.getElementById('btnSubmitNightAction').disabled = false;
-          AudioFX.beep(480, 'sine', 0.05);
-          populateNightTargets(containerId, targetsList, t.id);
-        };
-        btn.innerHTML = `
-          <span class="text-xs font-bold text-gray-200">${t.name}</span>
-          <span class="text-xs">${isSelected ? '🎯' : '⚪'}</span>
-        `;
-        container.appendChild(btn);
-      });
-    }
-
-    window.submitNightTarget = async function() {
-      if (!currentRoomData || !selectedNightTarget) return;
-      const me = currentRoomData.players.find(p => p.id === myPlayerId);
-      if (!me) return;
-
-      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'mafia_rooms', currentRoomCode);
-
-      // If Detective, show instant secret intel locally
-      if (me.role === 'detective') {
-        const targetObj = currentRoomData.players.find(p => p.id === selectedNightTarget);
-        const isMafia = targetObj && targetObj.role === 'mafia';
-        const modal = document.getElementById('detectiveIntelModal');
-        const text = document.getElementById('detectiveIntelText');
-        modal.classList.remove('hidden');
-        if (isMafia) {
-          text.innerHTML = `<span class="text-blood-500">${targetObj.name} IS MAFIA! ⚠️</span>`;
-          AudioFX.deathBuzzer();
-        } else {
-          text.innerHTML = `<span class="text-emerald-400">${targetObj.name} IS INNOCENT 🕊️</span>`;
-          AudioFX.beep(600, 'sine', 0.1);
-        }
-      }
-
-      // Update player action in state
-      const updatedPlayers = currentRoomData.players.map(p => {
-        if (p.id === myPlayerId) return { ...p, nightAction: selectedNightTarget };
-        return p;
-      });
-
-      // Update room
-      const nightPicks = { ...currentRoomData.nightPicks };
-      if (me.role === 'mafia') nightPicks.mafiaTarget = selectedNightTarget;
-      if (me.role === 'doctor') nightPicks.doctorTarget = selectedNightTarget;
-
-      await updateDoc(roomRef, {
-        players: updatedPlayers,
-        nightPicks: nightPicks
-      });
-
-      showToast('Night Action Locked in!');
-      AudioFX.beep(650, 'triangle', 0.08);
-
-      // Check if all special active roles submitted
-      checkIfNightCanResolve(updatedPlayers, nightPicks);
-    };
-
-    async function checkIfNightCanResolve(players, nightPicks) {
-      if (!currentRoomData || currentRoomData.hostId !== myPlayerId) return;
-
-      const aliveRoles = players.filter(p => p.isAlive).map(p => p.role);
-      const needMafia = aliveRoles.includes('mafia');
-      const needDoctor = aliveRoles.includes('doctor');
-
-      const mafiaDone = !needMafia || !!nightPicks.mafiaTarget;
-      const doctorDone = !needDoctor || !!nightPicks.doctorTarget;
-
-      if (mafiaDone && doctorDone) {
-        // Auto resolve after small delay
-        setTimeout(() => hostResolveNightPhase(), 1200);
-      }
-    }
-
-    window.hostResolveNightPhase = async function() {
-      if (!currentRoomData || currentRoomData.hostId !== myPlayerId) return;
-
-      const { mafiaTarget, doctorTarget } = currentRoomData.nightPicks || {};
-      let killedPlayer = null;
-
-      if (mafiaTarget) {
-        if (mafiaTarget === doctorTarget) {
-          // Doctor saved!
-          killedPlayer = null;
-        } else {
-          killedPlayer = currentRoomData.players.find(p => p.id === mafiaTarget);
-        }
-      }
-
-      const updatedPlayers = currentRoomData.players.map(p => {
-        if (killedPlayer && p.id === killedPlayer.id) {
-          return { ...p, isAlive: false, nightAction: null, vote: null };
-        }
-        return { ...p, nightAction: null, vote: null };
-      });
-
-      // Check immediate victory
-      const winCheck = evaluateWinCondition(updatedPlayers);
-
-      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'mafia_rooms', currentRoomCode);
-      if (winCheck) {
-        await updateDoc(roomRef, {
-          phase: 'gameover',
-          players: updatedPlayers,
-          gameResult: winCheck
-        });
-      } else {
-        await updateDoc(roomRef, {
-          phase: 'day',
-          players: updatedPlayers,
-          nightCasualty: killedPlayer ? { name: killedPlayer.name, role: killedPlayer.role } : null,
-          timerSeconds: 120
-        });
-      }
-      AudioFX.morningSunrise();
-    };
-
-    // --- DAY DISCUSSION & VOTING ---
-    function renderDayForUser(room, me, isHost) {
-      // 1. Gazette Headline
-      const casualtyCard = document.getElementById('morningCasualtyCard');
-      if (room.nightCasualty) {
-        casualtyCard.innerHTML = `
-          <div class="text-center space-y-1">
-            <span class="text-3xl">💀</span>
-            <div class="text-sm font-bold text-white">${room.nightCasualty.name} was murdered in the dark!</div>
-            <p class="text-[10px] text-gray-400">Doctor could not reach in time. They were: <strong class="text-red-400">${ROLES[room.nightCasualty.role].name}</strong>.</p>
+      appRoot.innerHTML = `
+        <div class="space-y-4">
+          <div class="text-center">
+            <span class="text-xs font-bold text-rose-400 bg-rose-950/60 px-3 py-1 rounded-full border border-rose-800/40">ఓటింగ్ ఛాంబర్</span>
+            <h2 class="text-2xl font-black text-white mt-1">ఫోన్ ${voter.name} కి ఇవ్వండి</h2>
+            <p class="text-xs text-slate-400">ఎవరిని ఎలిమినేట్ చేయాలో రహస్యంగా ఓటు వేయండి</p>
           </div>
-        `;
-      } else {
-        casualtyCard.innerHTML = `
-          <div class="text-center space-y-1">
-            <span class="text-3xl">🛡️</span>
-            <div class="text-sm font-bold text-emerald-400">Miraculous Sunrise! No one died!</div>
-            <p class="text-[10px] text-gray-400">The Doctor either protected the innocent or Mafia missed their target.</p>
+
+          <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 space-y-3">
+            <p class="text-xs font-bold text-slate-400">అనుమానితుడిని ఎంచుకోండి:</p>
+            <div class="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto">
+              ${living.filter(t => t.id !== voter.id).map(t => `
+                <button onclick="castVote('${voter.id}', '${t.id}')" class="p-3 rounded-2xl border text-left flex items-center gap-2 transition-all ${
+                  state.votes[voter.id] === t.id 
+                  ? 'border-rose-500 bg-rose-950/60 text-white ring-2 ring-rose-500' 
+                  : 'border-slate-800 bg-slate-950 text-slate-300'
+                }">
+                  <span class="text-2xl">${t.photo ? `<img src="${t.photo}" class="w-8 h-8 rounded-xl object-cover">` : t.avatar}</span>
+                  <span class="text-xs font-bold truncate">${t.name}</span>
+                </button>
+              `).join('')}
+            </div>
+
+            <button onclick="castVote('${voter.id}', 'SKIP')" class="w-full py-2.5 rounded-xl border text-xs font-bold transition-all ${
+              state.votes[voter.id] === 'SKIP' 
+              ? 'border-amber-500 bg-amber-950/60 text-amber-300' 
+              : 'border-slate-800 bg-slate-950 text-slate-400'
+            }">
+              🤷 ఎవరికీ ఓటు వేయను (Skip Vote)
+            </button>
           </div>
-        `;
-      }
 
-      // 2. Timer & Host Controls
-      const mins = Math.floor(room.timerSeconds / 60);
-      const secs = room.timerSeconds % 60;
-      document.getElementById('dayTimerDisplay').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-
-      const hostTimer = document.getElementById('hostTimerControls');
-      const hostVoting = document.getElementById('hostVotingControls');
-      if (isHost) {
-        hostTimer.classList.remove('hidden');
-        hostVoting.classList.remove('hidden');
-      } else {
-        hostTimer.classList.add('hidden');
-        hostVoting.classList.add('hidden');
-      }
-
-      // 3. Voting Chamber Grid
-      const votingGrid = document.getElementById('votingGrid');
-      votingGrid.innerHTML = '';
-      const alivePlayers = room.players.filter(p => p.isAlive);
-
-      alivePlayers.forEach(p => {
-        const isMyChoice = me && (me.vote === p.id);
-        const voteCount = room.players.filter(pl => pl.vote === p.id).length;
-
-        const btn = document.createElement('button');
-        btn.className = `p-3 rounded-xl border text-left flex items-center justify-between transition-all active:scale-95 ${isMyChoice ? 'border-blood-500 bg-blood-950/60 shadow-lg' : 'border-noir-700 bg-noir-900'}`;
-        btn.onclick = () => {
-          if (me && me.isAlive) castVote(p.id);
-        };
-        btn.innerHTML = `
-          <div>
-            <div class="text-xs font-bold text-white">${p.name}</div>
-            <div class="text-[9px] text-gray-400">${voteCount > 0 ? `${voteCount} Vote(s)` : 'No votes'}</div>
-          </div>
-          <span class="text-sm">${isMyChoice ? '🗳️' : '⚪'}</span>
-        `;
-        votingGrid.appendChild(btn);
-      });
+          <button onclick="nextVoter()" class="w-full py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-500 font-bold text-sm text-white shadow-xl">
+            ఓటు కన్ఫర్మ్ చేయండి (Confirm Vote) ➔
+          </button>
+        </div>
+      `;
     }
 
-    window.castVote = async function(targetId) {
-      if (!currentRoomData) return;
-      const me = currentRoomData.players.find(p => p.id === myPlayerId);
-      if (!me || !me.isAlive) {
-        showToast('Deceased players cannot vote!');
-        return;
+    function castVote(voterId, targetId) {
+      state.votes[voterId] = targetId;
+      playSound('tick');
+      render();
+    }
+
+    function nextVoter() {
+      const living = state.players.filter(p => p.isAlive);
+      currentVoterIdx++;
+      if (currentVoterIdx < living.length) {
+        render();
+      } else {
+        currentVoterIdx = 0;
+        tallyVotesAndExecute();
       }
+    }
 
-      const updated = currentRoomData.players.map(p => {
-        if (p.id === myPlayerId) return { ...p, vote: targetId };
-        return p;
-      });
-
-      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'mafia_rooms', currentRoomCode);
-      await updateDoc(roomRef, { players: updated });
-      AudioFX.beep(520, 'sine', 0.08);
-      showToast(targetId === 'skip' ? 'Voted to Skip Execution' : 'Vote registered!');
-    };
-
-    window.hostAddTimerSeconds = async function(secs) {
-      if (!currentRoomData || currentRoomData.hostId !== myPlayerId) return;
-      const nextTime = (currentRoomData.timerSeconds || 0) + secs;
-      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'mafia_rooms', currentRoomCode);
-      await updateDoc(roomRef, { timerSeconds: nextTime });
-      AudioFX.beep(600, 'sine', 0.05);
-    };
-
-    window.hostTallyAndExecute = async function() {
-      if (!currentRoomData || currentRoomData.hostId !== myPlayerId) return;
-
-      const votes = {};
-      currentRoomData.players.forEach(p => {
-        if (p.vote) {
-          votes[p.vote] = (votes[p.vote] || 0) + 1;
+    function tallyVotesAndExecute() {
+      const voteCounts = {};
+      Object.values(state.votes).forEach(tId => {
+        if (tId !== 'SKIP') {
+          voteCounts[tId] = (voteCounts[tId] || 0) + 1;
         }
       });
 
-      // Find highest voted target
-      let maxVotes = 0;
-      let targetToExecuteId = null;
+      let highestVotes = 0;
+      let eliminatedId = null;
       let isTie = false;
 
-      Object.keys(votes).forEach(tId => {
-        if (votes[tId] > maxVotes) {
-          maxVotes = votes[tId];
-          targetToExecuteId = tId;
+      Object.entries(voteCounts).forEach(([id, count]) => {
+        if (count > highestVotes) {
+          highestVotes = count;
+          eliminatedId = id;
           isTie = false;
-        } else if (votes[tId] === maxVotes) {
+        } else if (count === highestVotes) {
           isTie = true;
         }
       });
 
-      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'mafia_rooms', currentRoomCode);
-
-      if (isTie || !targetToExecuteId || targetToExecuteId === 'skip') {
-        showToast('Vote tied or skipped! No one executed.');
-        await updateDoc(roomRef, {
-          phase: 'night',
-          round: currentRoomData.round + 1,
-          nightPicks: { mafiaTarget: null, doctorTarget: null },
-          players: currentRoomData.players.map(p => ({ ...p, vote: null, nightAction: null }))
-        });
-        AudioFX.nightGong();
+      if (isTie || !eliminatedId) {
+        alert("ఓట్లు సమంగా వచ్చాయి లేదా స్కిప్ చేశారు! ఎవరూ ఎలిమినేట్ అవ్వలేదు.");
+        startNightPhase();
         return;
       }
 
-      // Execute player
-      const executed = currentRoomData.players.find(p => p.id === targetToExecuteId);
-      const updatedPlayers = currentRoomData.players.map(p => {
-        if (p.id === targetToExecuteId) return { ...p, isAlive: false, vote: null, nightAction: null };
-        return { ...p, vote: null, nightAction: null };
-      });
+      const eliminatedPlayer = state.players.find(p => p.id === eliminatedId);
+      eliminatedPlayer.isAlive = false;
+      playSound('kill');
 
-      // Special JESTER Check: If Jester was executed by Town -> JESTER WINS!
-      if (executed && executed.role === 'jester') {
-        AudioFX.deathBuzzer();
-        await updateDoc(roomRef, {
-          phase: 'gameover',
-          players: updatedPlayers,
-          gameResult: {
-            winner: 'jester',
-            title: '🃏 JESTER TRICK WIN!',
-            subtitle: `${executed.name} tricked the town into executing them!`
-          }
-        });
+      // JESTER VICTORY CHECK
+      if (eliminatedPlayer.role === 'jester') {
+        triggerVictory('Jester', `పిచ్చి రోల్ (Jester) అయిన ${eliminatedPlayer.name} ని ప్రజలు ఓటేసి ఎలిమినేట్ చేశారు! జెస్టర్ ప్లాన్ వర్కవుట్ అయింది!`);
         return;
       }
 
-      const winResult = evaluateWinCondition(updatedPlayers);
-      if (winResult) {
-        await updateDoc(roomRef, {
-          phase: 'gameover',
-          players: updatedPlayers,
-          gameResult: winResult
-        });
+      // Check Normal Win Condition
+      const verdict = checkWinCondition();
+      if (verdict) {
+        triggerVictory(verdict.winner, verdict.msg);
       } else {
-        await updateDoc(roomRef, {
-          phase: 'night',
-          round: currentRoomData.round + 1,
-          nightPicks: { mafiaTarget: null, doctorTarget: null },
-          players: updatedPlayers
-        });
-        AudioFX.nightGong();
+        alert(`${eliminatedPlayer.name} (${ROLE_INFO[eliminatedPlayer.role].name}) ఓటింగ్ ద్వారా ఎలిమినేట్ అయ్యారు! ఆట కొనసాగుతోంది...`);
+        startNightPhase();
       }
-    };
+    }
 
-    // --- WIN CONDITIONS CHECK ---
-    function evaluateWinCondition(players) {
-      const alive = players.filter(p => p.isAlive);
-      const aliveMafia = alive.filter(p => p.role === 'mafia');
-      const aliveNonMafia = alive.filter(p => p.role !== 'mafia');
+    /* =====================================================================
+       WIN CHECK & CELEBRATION
+    ===================================================================== */
+    function checkWinCondition() {
+      const living = state.players.filter(p => p.isAlive);
+      const mafiaLiving = living.filter(p => p.role === 'mafia');
+      const townLiving = living.filter(p => p.role !== 'mafia');
 
-      if (aliveMafia.length === 0) {
-        return {
-          winner: 'town',
-          title: '🕊️ TOWN WINS!',
-          subtitle: 'All Mafia members were discovered and eliminated!'
-        };
+      if (mafiaLiving.length === 0) {
+        return { winner: 'Village', msg: 'గ్రామస్థులు మాఫియా మొత్తాన్ని ఖతం చేశారు! ఊరికి పట్టిన పీడ విరగడైంది! 🏆' };
       }
-
-      if (aliveMafia.length >= aliveNonMafia.length) {
-        return {
-          winner: 'mafia',
-          title: '🩸 MAFIA TAKEOVER!',
-          subtitle: 'The Mafia syndicate has seized complete control of the town.'
-        };
+      if (mafiaLiving.length >= townLiving.length) {
+        return { winner: 'Mafia', msg: 'మాఫియా ఆధిక్యంలోకి వచ్చింది! నగరాన్ని మాఫియా పూర్తిగా కైవసం చేసుకుంది! 🔪' };
       }
-
       return null;
     }
 
-    // --- GAME OVER & RESTART ---
-    function renderGameOver(room, isHost) {
-      const res = room.gameResult || { winner: 'town', title: 'GAME OVER', subtitle: '' };
-      document.getElementById('endGameTitle').innerText = res.title;
-      document.getElementById('endGameSubtitle').innerText = res.subtitle;
-
-      const icon = document.getElementById('endGameIcon');
-      if (res.winner === 'town') {
-        icon.innerText = '🕊️';
-        AudioFX.morningSunrise();
-      } else if (res.winner === 'mafia') {
-        icon.innerText = '🩸';
-        AudioFX.deathBuzzer();
-      } else {
-        icon.innerText = '🃏';
-        AudioFX.beep(750, 'triangle', 0.4);
-      }
-
-      // Roster
-      const roster = document.getElementById('endGameRoster');
-      roster.innerHTML = '';
-      (room.players || []).forEach(p => {
-        const role = ROLES[p.role] || ROLES.villager;
-        const row = document.createElement('div');
-        row.className = `p-2 rounded-xl flex items-center justify-between text-xs bg-noir-900 border ${p.isAlive ? 'border-white/10' : 'border-red-950 opacity-50'}`;
-        row.innerHTML = `
-          <div class="flex items-center gap-2">
-            <span>${role.icon}</span>
-            <span class="font-bold ${p.isAlive ? 'text-white' : 'line-through text-gray-500'}">${p.name}</span>
-          </div>
-          <div class="text-[10px] uppercase font-bold text-gray-400">
-            ${role.name} (${p.isAlive ? 'Alive' : 'Dead'})
-          </div>
-        `;
-        roster.appendChild(row);
-      });
-
-      const hostRestart = document.getElementById('hostRestartControls');
-      if (isHost) {
-        hostRestart.classList.remove('hidden');
-      } else {
-        hostRestart.classList.add('hidden');
-      }
+    function triggerVictory(winnerTeam, msg) {
+      playSound('victory');
+      state.winnerTeam = winnerTeam;
+      state.winnerMsg = msg;
+      state.view = 'WINNER';
+      render();
     }
 
-    window.hostRestartLobby = async function() {
-      if (!currentRoomData || currentRoomData.hostId !== myPlayerId) return;
+    function renderWinner() {
+      const isMafia = state.winnerTeam === 'Mafia';
+      const isJester = state.winnerTeam === 'Jester';
 
-      const resetPlayers = currentRoomData.players.map(p => ({
-        ...p,
-        isAlive: true,
-        isReady: false,
-        nightAction: null,
-        vote: null,
-        role: null
-      }));
+      appRoot.innerHTML = `
+        <div class="space-y-5 text-center py-6">
+          <div class="inline-block p-4 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl">
+            <span class="text-6xl block mb-2">${isJester ? '🃏' : isMafia ? '🔪' : '👑'}</span>
+            <h2 class="text-3xl font-black cinzel ${isJester ? 'text-purple-400' : isMafia ? 'text-rose-500' : 'text-emerald-400'}">
+              ${isJester ? 'JESTER WINS!' : isMafia ? 'MAFIA VICTORY!' : 'VILLAGE TRIUMPH!'}
+            </h2>
+            <p class="text-sm text-slate-300 mt-2 telugu-font px-4 leading-relaxed">${state.winnerMsg}</p>
+          </div>
 
-      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'mafia_rooms', currentRoomCode);
-      await updateDoc(roomRef, {
-        phase: 'lobby',
-        players: resetPlayers,
-        nightCasualty: null,
-        gameResult: null
-      });
-      AudioFX.morningSunrise();
-    };
+          <!-- All Player Roles Summary -->
+          <div class="p-4 rounded-3xl bg-slate-900/90 border border-slate-800 text-left space-y-2">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">అందరి పాత్రలు (Actual Identities):</h4>
+            <div class="space-y-1.5 max-h-48 overflow-y-auto">
+              ${state.players.map(p => `
+                <div class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800/80">
+                  <div class="flex items-center gap-2">
+                    <span class="text-lg">${p.photo ? `<img src="${p.photo}" class="w-6 h-6 rounded-md object-cover">` : p.avatar}</span>
+                    <span class="text-xs font-bold text-white">${p.name}</span>
+                    ${!p.isAlive ? '<span class="text-[10px] text-rose-500 font-bold">(Dead)</span>' : ''}
+                  </div>
+                  <span class="text-xs font-black ${ROLE_INFO[p.role].textColor}">${ROLE_INFO[p.role].name}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
 
-    // Auto load state
-    window.onload = function() {
-      ensureAuth();
-    };
+          <button onclick="state.view = 'SETUP'; render();" class="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-600 to-amber-500 font-black text-sm text-white shadow-xl shadow-rose-900/40 uppercase tracking-wider">
+            మళ్ళీ కొత్త ఆట ఆడండి (Play Again) 🔄
+          </button>
+        </div>
+      `;
+    }
+
+    /* =====================================================================
+       HELPERS & MODAL TOGGLES
+    ===================================================================== */
+    function openRulesModal() {
+      document.getElementById('rulesModal').classList.remove('hidden');
+    }
+    function closeRulesModal() {
+      document.getElementById('rulesModal').classList.add('hidden');
+    }
+
+    // Initialize App on load
+    render();
   </script>
 </body>
 </html>
